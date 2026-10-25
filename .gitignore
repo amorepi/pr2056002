@@ -1,0 +1,25 @@
+# Eseguibili compilati
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+
+# File di test e coperture
+*.test
+*.txt
+*.out
+
+# File di configurazione e log locali
+*.env
+.DS_Store
+
+# File di configurazione degli IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
