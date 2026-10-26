@@ -111,7 +111,13 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 	if err != nil {
 		log.Printf("ERRORE [Fatturato Parsing HTML] (%s, %s): %v", layoutPath, pagePath, err)
 		// http.Error(w, "Errore caricamento componenti grafici", http.StatusInternalServerError)
-		http.Error(w, "Errore reale: "+os.Getwd()+"- "+err.Error(), http.StatusInternalServerError)
+
+		dir, errore := os.Getwd()
+		if errore != nil {
+			fmt.Println("Errore nel recupero del percorso:", errore)
+			return
+		}
+		http.Error(w, "Errore reale: "+dir+"- "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
