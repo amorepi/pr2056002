@@ -1,1 +1,8 @@
+## v1.1.0 - 26/10/2026_16:38: Adozione Bootstrap 3.8, Gestione errori e alcune funzioni di base
+  - Ingegnerizzazione **Architettura Modulare a Pacchetti**: Disaccoppiamento radicale della logica aziendale (JSON API) dai servizi visivi globali e di sistema tramite una strutturazione con `/pkg`.
+  - Sviluppo **Motore di Rendering Nativo**: Implementazione del pacchetto isolato `pkg/render` basato su `html/template` per la compilazione a componenti annidati (`layout.html` e template figli).
+  - Integrazione **Interfaccia Bootstrap 5.8**: Layout Top-Fixed responsivo a tre colonne geometriche con asset statici (Logo e Avatar Amministratore) gestiti dinamicamente da variabili d'ambiente `.env`.
+  - Scudo di Sicurezza **Recovery Middleware**: Rilascio del middleware globale in `pkg/middleware` per l'intercettazione dei crash critici (`panic`) con estrazione dello stack trace dei log e deviazione su errore grafico `500.html`.
+  - Standardizzazione **Gestione Errori di Rete**: Instradamento automatico intelligente dei fallimenti (`404` e `500`) in modalità bivalente: risposta in JSON per le chiamate `/api` e interfaccia grafica Bootstrap per la navigazione web.
+
 ## v1.0.0 - 25/10/2026_13:26 - INITIAL START

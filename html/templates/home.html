@@ -1,0 +1,20 @@
+<!-- html/templates/home.html -->
+{{define "body"}}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    
+    <!-- Metadati iniettati dinamicamente dalla struttura PageContext di Go -->
+    <h1 class="display-5 fw-bold text-dark mb-3">Benvenuto su {{.ProjectName}}</h1>
+    
+    <p class="lead text-secondary mb-4">
+      Il motore backend in Golang e il database PostgreSQL 17 sono pronti e connessi in parità perfetta.
+    </p>
+    
+    <p class="small text-muted">
+      Endpoint di gestione utenti configurato e attivo su 
+      <code class="bg-body-secondary text-dark px-2 py-1 rounded border font-monospace">/api/users</code>
+    </p>
+
+  </div>
+</div>
+{{end}}

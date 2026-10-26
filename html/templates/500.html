@@ -1,0 +1,16 @@
+<!-- html/templates/500.html -->
+{{define "body"}}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    <div class="p-5 bg-white border rounded shadow-sm">
+      <h1 class="display-1 fw-bold text-danger">500</h1>
+      <h2 class="fw-bold text-dark mb-3">Servizio Sovraccarico</h2>
+      <p class="text-secondary mb-4">La squadra tecnica è stata avvisata automaticamente. Ti invitiamo a riprovare tra poco.</p>
+      <div class="d-flex gap-2 justify-content-center">
+        <button onclick="window.location.reload();" class="btn btn-primary px-4">Aggiorna la Pagina</button>
+        <a href="/" class="btn btn-outline-secondary px-4">Torna alla Home</a>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
