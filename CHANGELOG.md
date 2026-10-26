@@ -1,3 +1,6 @@
+## v1.1.1 - 26/10/2026_22:15: Fix
+  - Fix
+
 ## v1.1.0 - 26/10/2026_16:38: Adozione Bootstrap 3.8, Gestione errori e alcune funzioni di base
   - Ingegnerizzazione **Architettura Modulare a Pacchetti**: Disaccoppiamento radicale della logica aziendale (JSON API) dai servizi visivi globali e di sistema tramite una strutturazione con `/pkg`.
   - Sviluppo **Motore di Rendering Nativo**: Implementazione del pacchetto isolato `pkg/render` basato su `html/template` per la compilazione a componenti annidati (`layout.html` e template figli).
