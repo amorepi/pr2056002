@@ -111,9 +111,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 	if err != nil {
 		log.Printf("ERRORE [Fatturato Parsing HTML] (%s, %s): %v", layoutPath, pagePath, err)
 		// http.Error(w, "Errore caricamento componenti grafici", http.StatusInternalServerError)
-		http.Error(w, "Errore reale: "+err.Error(), http.StatusInternalServerError)
-
-		// Errore reale: open ./html/templates/layout.html: no such file or directory
+		http.Error(w, "Errore reale: "+os.Getwd()+"- "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
