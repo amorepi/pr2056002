@@ -7,6 +7,17 @@ import (
 	"runtime/debug"
 )
 
+/*
+	Al posto di [Ref.11] - main.go
+	"pr2056002/pkg/middleware"
+
+	[Ref.12]
+	// 4. Pacchetto middleware: avvolge tutto lo scheletro nello scudo protettivo
+	handlerProtetto := middleware.RecoveryMiddleware(mux)
+
+	log.Fatal(http.ListenAndServe(":"+port, handlerProtetto))   // [Ref.13] in main.go
+*/
+
 // RecoveryMiddleware intercetta i panic e inietta l'errore 500 grafico o JSON
 func RecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

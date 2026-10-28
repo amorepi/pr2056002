@@ -22,18 +22,8 @@ type PageContext struct {
 // Layout genera la struttura agnostica a tre colonne legata a Bootstrap 5.3
 func Layout(content string, userName string, version string) string {
 	project := os.Getenv("PROJECT")
-	logoEnv := os.Getenv("LOGO_PROJ")
-	avatarEnv := os.Getenv("AVATAR_PROJ")
-
-	logoUrl := "/img/logo_proj.png"
-	if logoEnv != "" {
-		logoUrl = "/img/" + logoEnv
-	}
-
-	avatarUrl := "/img/avatar_proj.png"
-	if avatarEnv != "" {
-		avatarUrl = "/img/" + avatarEnv
-	}
+	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
+	avatarUrl := "/img/" + os.Getenv("AVATAR_PROJ")
 
 	if userName == "" {
 		userName = "Amministratore"
@@ -42,56 +32,25 @@ func Layout(content string, userName string, version string) string {
 		version = "v1.0.0"
 	}
 
-	return fmt.Sprintf(`<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Progetto %s</title>
-  <link href="https://jsdelivr.net" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <header class="navbar fixed-top bg-white border-bottom shadow-sm py-2">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
-      <div class="d-flex align-items-center gap-3">
-        <a href="/" class="navbar-brand m-0 p-0">
-          <img src="%s" alt="Logo" class="d-inline-block align-text-top" style="height: 36px;">
-        </a>
-        <a href="/" class="nav-link text-dark fw-medium">Home</a>
-        <a href="/dashboard" class="nav-link text-dark fw-medium">Dashboard</a>
-      </div>
-      <div class="text-center">
-        <span class="badge text-bg-secondary font-monospace px-2 py-1">%s</span>
-      </div>
-      <div class="d-flex align-items-center gap-3">
-        <div class="position-relative" title="%s" style="width: 36px; height: 36px;">
-          <img src="%s" alt="User Avatar" class="img-fluid rounded-circle border w-100 h-100 object-fit-cover">
-        </div>
-        <a href="/logout" class="btn btn-outline-danger btn-sm px-3">Esci</a>
-      </div>
-    </div>
-  </header>
-  <main class="container-fluid pt-5 mt-5">%s</main>
-  <script src="https://jsdelivr.net"></script>
-</body>
-</html>`, project, logoUrl, version, userName, avatarUrl, content)
+	// 1. Legge il file (restituisce un array di byte e un eventuale errore)
+	data, err := os.ReadFile("testo.html")
+	if err != nil {
+		fmt.Println("Errore durante la lettura del file:", err)
+		// return
+	}
+	// 2. Converte i byte in stringa e li assegna alla variabile
+	htmlContent := string(data)
+
+	fmt.Println("Passa da qui", err)
+
+	return fmt.Sprintf(htmlContent, project, logoUrl, version, userName, avatarUrl, content)
 }
 
-// RenderTemplate unisce i dati della testa con il corpo del template in basso
+// Questa funzione unisce i dati della testa con il corpo del template in basso
 func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string, statusCode int) {
 	project := os.Getenv("PROJECT")
-	logoEnv := os.Getenv("LOGO_PROJ")
-	avatarEnv := os.Getenv("AVATAR_PROJ")
-
-	logoUrl := "/img/MiniserviziLogo50.png"
-	if logoEnv != "" {
-		logoUrl = "/img/" + logoEnv
-	}
-
-	avatarUrl := "/img/User.png"
-	if avatarEnv != "" {
-		avatarUrl = "/img/" + avatarEnv
-	}
+	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
+	avatarUrl := "/img/" + os.Getenv("AVATAR_PROJ")
 
 	data := PageContext{
 		ProjectName: project,
@@ -101,8 +60,8 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 		Version:     CurrentVersion,
 	}
 
-	layoutPath := "/html/templates/layout.html"
-	pagePath := "/html/templates/" + templatePage
+	layoutPath := "html/templates/layout.html"
+	pagePath := "html/templates/" + templatePage
 
 	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -110,6 +69,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 	tmplt, err := template.ParseFiles(layoutPath, pagePath)
 	if err != nil {
 		log.Printf("ERRORE [Fatturato Parsing HTML] (%s, %s): %v", layoutPath, pagePath, err)
+
 		// http.Error(w, "Errore caricamento componenti grafici", http.StatusInternalServerError)
 
 		dir, errore := os.Getwd()
@@ -117,7 +77,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 			fmt.Println("Errore nel recupero del percorso:", errore)
 			return
 		}
-		http.Error(w, "Errore reale: "+dir+"- "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Errore reale: "+dir+" - "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

@@ -1,3 +1,5 @@
+## v1.1.5 - 28/10/2026_18:28: Aggiornamento funzionalità e manutenzione
+
 ## v1.1.4 - 26/10/2026_22:53: Fix
 
 ## v1.1.3 - 26/10/2026_22:44: Fix

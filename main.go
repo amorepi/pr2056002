@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"os"
 
-	// Logica degli endpoint e dei middleware
-	"pr2056002/pkg/middleware"
+	// Logica degli endpoint [Ref.01]
+	// [Ref.11]
 	"pr2056002/pkg/render"
-	"pr2056002/restapi"
 
 	// Il "_" obbliga l'inclusione di questo pacchetto anche in assenza di chiamate dirette
 	// Driver nativo PostgreSQL
@@ -19,9 +18,6 @@ import (
 	// Auto-caricamento del file delle variabili d'ambiente .env
 	"github.com/joho/godotenv"
 )
-
-// Version riceve il valore in fase di compilazione remota via ldflags
-var Version = "working-progress"
 
 func main() {
 	// 1. Configurazione del tracciamento difensivo dei log (File e Riga esatta)
@@ -32,17 +28,6 @@ func main() {
 		// Non blocchiamo se manca il file (es. sulla VPS sono già in memoria grazie a Systemd)
 		log.Printf("INFO: File .env non rilevato sul disco o già caricato in memoria")
 	}
-
-	// Allineamento dinamico della stringa della versione visiva
-	if Version == "working-progress" {
-		envVersion := os.Getenv("APP_VERSION")
-		if envVersion != "" {
-			Version = envVersion
-		}
-	}
-
-	// Passiamo in sicurezza il valore della versione al pacchetto restapi prima di avviare il server
-	restapi.CurrentVersion = Version
 
 	// 3. Recupero della stringa DSN e connessione a PostgreSQL 17
 	dbConnStr := os.Getenv("DATABASE_URL")
@@ -62,44 +47,54 @@ func main() {
 		log.Fatalf("CRITICAL BLINK: Il database non risponde o non esiste nel catalogo PostgreSQL: %v", err)
 	}
 
-	// Iniezione della connessione DB attiva all'interno del modulo restapi
-	restapi.SetDatabase(db)
-
+	// [Ref.02]
 	// Allineamento della versione globale sul motore grafico isolato
-	render.CurrentVersion = Version
+	render.CurrentVersion = os.Getenv("APP_VERSION")
 
-	// ARCHITETTURA DEL ROUTING CON COMPONENTI GLOBALMENTE DISTINTI
+	// ARCHITETTURA DEL ROUTING ESSENZIALE PER LA PRODUZIONE
 	mux := http.NewServeMux()
 
-	// 1. Pacchetto restapi: si occupa SOLO degli scambi dati JSON delle API
-	mux.HandleFunc("/api/users", restapi.UsersHandler)
-	mux.HandleFunc("/api/health", restapi.HealthHandler)
+	// 1. Gestione asset statici (Immagini e Logo)
+	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("html/img"))))
 
-	// 2. Pacchetto statico dei file asset
-	mux.Handle("/html/", http.StripPrefix("/html/", http.FileServer(http.Dir("./html"))))
-	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("./html/img"))))
-
-	// 3. Pacchetto render: intercetta la radice o smista i 404 grafici
+	// 2. Handler unico per file statici espliciti e rotte applicative dinamiche
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		// A. GESTIONE FILE STATICI ESPLICITI: se viene richiesto un file specifico (es. /index.html)
+		if r.URL.Path != "/" {
+			targetFile := "html" + r.URL.Path
+
+			if info, err := os.Stat(targetFile); err == nil && !info.IsDir() {
+				data, err := os.ReadFile(targetFile)
+				if err != nil {
+					render.Error404Handler(w, r)
+					return
+				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				w.Write(data)
+				return
+			}
+		}
+
+		// B. GESTIONE ROTTA DINAMICA DELLA RADICE (/)
 		if r.URL.Path == "/" {
 			render.RenderTemplate(w, r, "home.html", http.StatusOK)
 			return
 		}
+
+		// Fallback definitivo se nessun file statico o rotta dinamica coincide
 		render.Error404Handler(w, r)
 	})
 
-	// 4. Pacchetto middleware: avvolge tutto lo scheletro nello scudo protettivo
-	handlerProtetto := middleware.RecoveryMiddleware(mux)
-
-	// 6. Avvio dell'ascolto di rete
+	// 3. Avvio dell'ascolto di rete legato al router attivo
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	fmt.Printf("[START] Fondazione Server Go attiva - Versione: %s\n", Version)
+	fmt.Printf("[START] Fondazione Server Go attiva - Versione: %s\n", os.Getenv("APP_VERSION"))
 	fmt.Printf("[START] Connessione a PostgreSQL 17 verificata con successo.\n")
 	fmt.Printf("[START] Interfaccia Bootstrap 5 e API operative sulla porta %s...\n", port)
 
-	log.Fatal(http.ListenAndServe(":"+port, handlerProtetto))
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
