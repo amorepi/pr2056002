@@ -99,6 +99,5 @@ func main() {
 	fmt.Printf("[START] Connessione a PostgreSQL 17 verificata con successo.\n")
 	fmt.Printf("[START] Interfaccia Bootstrap 5 e API operative sulla porta %s...\n", port)
 
-	log.Fatal(http.ListenAndServe(":"+port, mux))
 	log.Fatal(http.ListenAndServe(":"+port, handlerProtetto))
 }
