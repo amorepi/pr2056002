@@ -8,7 +8,7 @@ import (
 	"os"
 
 	// Logica degli endpoint [Ref.01]
-	// [Ref.11]
+	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 
 	// Il "_" obbliga l'inclusione di questo pacchetto anche in assenza di chiamate dirette
@@ -92,9 +92,13 @@ func main() {
 		port = "8080"
 	}
 
+	// 4. Pacchetto middleware: avvolge tutto lo scheletro nello scudo protettivo
+	handlerProtetto := middleware.RecoveryMiddleware(mux)
+
 	fmt.Printf("[START] Fondazione Server Go attiva - Versione: %s\n", os.Getenv("APP_VERSION"))
 	fmt.Printf("[START] Connessione a PostgreSQL 17 verificata con successo.\n")
 	fmt.Printf("[START] Interfaccia Bootstrap 5 e API operative sulla porta %s...\n", port)
 
 	log.Fatal(http.ListenAndServe(":"+port, mux))
+	log.Fatal(http.ListenAndServe(":"+port, handlerProtetto))
 }
