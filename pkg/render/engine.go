@@ -119,9 +119,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	// ==========================================
 	// AMBIENTE DI PRODUZIONE (VPS)
 	// ==========================================
-	// ==========================================
-	// AMBIENTE DI PRODUZIONE (VPS) - Allineato
-	// ==========================================
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError) // <-- Deve stare SEMPRE prima di w.Write
 
