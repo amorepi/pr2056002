@@ -14,9 +14,8 @@ type MetricCard struct {
 	BadgeText   string
 	BadgeClass  string
 	IsFullWidth bool
+	IsHalfWidth bool
 }
-
-// IsHalfWidth bool
 
 // ToolButton definisce lo scheletro inerte per i pulsanti di utility e database
 type ToolButton struct {
