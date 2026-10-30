@@ -1,6 +1,7 @@
 package render
 
 import (
+	"bytes"
 	"html/template"
 	"net/http"
 	"os"
@@ -80,19 +81,24 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	layoutPath := "html/templates/layout.html"
 	pagePath := "html/templates/dashboard.html"
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	// 5. Analisi ed esecuzione dei componenti grafici isolati
 	tmplt, err := template.ParseFiles(layoutPath, pagePath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Errore parsing template dashboard: " + err.Error()))
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	err = tmplt.ExecuteTemplate(w, "layout", data)
+
+	// Creiamo il buffer temporaneo anche per la Dashboard
+	var buf bytes.Buffer
+	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
+		// Se il template ha errori, interrompe l'esecuzione e pulisce l'output
 		HandleTemplateError(w, r, err)
 		return
 	}
+
+	// Rendering completato al 100% con successo: emettiamo i dati
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = buf.WriteTo(w)
 }

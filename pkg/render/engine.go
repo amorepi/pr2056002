@@ -1,6 +1,7 @@
 package render
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
 	"log"
@@ -22,7 +23,7 @@ type PageContext struct {
 	Version     string
 }
 
-// RenderTemplate unisce il layout base a tre colonne con la pagina specifica richiesta
+// RenderTemplate esegue il rendering atomico tramite buffer di memoria
 func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string, statusCode int) {
 	project := os.Getenv("PROJECT")
 	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
@@ -39,20 +40,25 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 	layoutPath := "html/templates/layout.html"
 	pagePath := "html/templates/" + templatePage
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 	tmplt, err := template.ParseFiles(layoutPath, pagePath)
 	if err != nil {
 		HandleTemplateError(w, r, err)
 		return
 	}
 
-	w.WriteHeader(statusCode)
-	err = tmplt.ExecuteTemplate(w, "layout", data)
+	// Creiamo un buffer temporaneo per testare il rendering in isolamento
+	var buf bytes.Buffer
+	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
+		// Se fallisce qui, il buffer viene buttato e la risposta rimane pulita
 		HandleTemplateError(w, r, err)
 		return
 	}
+
+	// Se tutto è andato a buon fine, inviamo l'intestazione e i byte accumulati
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(statusCode)
+	_, _ = buf.WriteTo(w)
 }
 
 // Error404Handler intercetta le risorse inesistenti smistando l'output tra JSON (API) e HTML grafico
@@ -100,7 +106,7 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprintf(w, `
 			<div style="font-family: system-ui, -apple-system, sans-serif; padding: 25px; background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; border-radius: 8px; max-width: 800px; margin: 30px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">❌ Errore Template (Mac)</h4>
+				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">Errore Template (Mac)</h4>
 				<div style="font-family: monospace; background: #fff; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 14px; line-height: 1.5; color: #333;">
 					%v
 				</div>
