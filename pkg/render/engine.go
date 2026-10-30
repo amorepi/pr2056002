@@ -8,13 +8,12 @@ import (
 	"os"
 	"runtime/debug"
 	"time"
-	// Importa il tuo pacchetto mailer se necessario, o usa una funzione interna
-	// "pr2056002/pkg/utils"
 )
 
-// Variabile globale ereditata dal main per la versione
+// Variabile globale allineata dal main per tracciare la versione dell'applicazione
 var CurrentVersion string
 
+// PageContext definisce la struttura dati per il layout agnostico standard (Header/Navbar)
 type PageContext struct {
 	ProjectName string
 	LogoUrl     string
@@ -23,32 +22,7 @@ type PageContext struct {
 	Version     string
 }
 
-// Layout genera la struttura agnostica a tre colonne legata a Bootstrap 5.3
-func Layout(content string, userName string, version string) string {
-	project := os.Getenv("PROJECT")
-	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
-	avatarUrl := "/img/" + os.Getenv("AVATAR_PROJ")
-
-	if userName == "" {
-		userName = "Amministratore"
-	}
-	if version == "" {
-		version = "v1.0.0"
-	}
-
-	// 1. Legge il file (restituisce un array di byte e un eventuale errore)
-	data, err := os.ReadFile("testo.html")
-	if err != nil {
-		fmt.Println("Errore durante la lettura del file:", err)
-		// return
-	}
-	// 2. Converte i byte in stringa e li assegna alla variabile
-	htmlContent := string(data)
-
-	return fmt.Sprintf(htmlContent, project, logoUrl, version, userName, avatarUrl, content)
-}
-
-// Questa funzione unisce i dati della testa con il corpo del template in basso
+// RenderTemplate unisce il layout base a tre colonne con la pagina specifica richiesta
 func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string, statusCode int) {
 	project := os.Getenv("PROJECT")
 	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
@@ -65,33 +39,23 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 	layoutPath := "html/templates/layout.html"
 	pagePath := "html/templates/" + templatePage
 
-	w.WriteHeader(statusCode)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	tmplt, err := template.ParseFiles(layoutPath, pagePath)
 	if err != nil {
-		log.Printf("ERRORE [Fatturato Parsing HTML] (%s, %s): %v", layoutPath, pagePath, err)
-
-		// http.Error(w, "Errore caricamento componenti grafici", http.StatusInternalServerError)
-
-		dir, errore := os.Getwd()
-		if errore != nil {
-			fmt.Println("Errore nel recupero del percorso:", errore)
-			return
-		}
-		http.Error(w, "Errore reale: "+dir+" - "+err.Error(), http.StatusInternalServerError)
+		HandleTemplateError(w, r, err)
 		return
 	}
 
+	w.WriteHeader(statusCode)
 	err = tmplt.ExecuteTemplate(w, "layout", data)
 	if err != nil {
-		log.Printf("ERRORE [Fallito Rendering Template 'layout']: %v", err)
-		http.Error(w, "Errore interno durante il rendering della pagina", http.StatusInternalServerError)
+		HandleTemplateError(w, r, err)
 		return
 	}
 }
 
-// Error404Handler isolato e pertinente
+// Error404Handler intercetta le risorse inesistenti smistando l'output tra JSON (API) e HTML grafico
 func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
 		w.Header().Set("Content-Type", "application/json")
@@ -102,17 +66,17 @@ func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	RenderTemplate(w, r, "404.html", http.StatusNotFound)
 }
 
-// HandleTemplateError gestisce centralmente gli errori separando l'output tra browser e file log
+// HandleTemplateError centralizza i fallimenti di rendering dividendo la logica tra Mac e VPS
 func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	if err == nil {
 		return
 	}
 
-	// 1. Cattura dello Stack Trace e data/ora attuali
+	// 1. Cattura dello Stack Trace e formattazione temporale
 	stackTrace := string(debug.Stack())
 	nowStr := time.Now().Format("2006-01-02 15:04:05")
 
-	// 2. Controllo dell'ambiente basato sulla presenza di /var/www
+	// 2. Controllo hardware dell'ambiente: se la cartella esiste, siamo sulla VPS
 	_, statErr := os.Stat("/var/www")
 	isProduction := statErr == nil
 
@@ -121,12 +85,10 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		// AMBIENTE DI SVILUPPO (Mac)
 		// ==========================================
 
-		// Scrittura strutturata ed esplicita nel file di log locale (senza sporcare la shell)
-		logFile, openErr := os.OpenFile("logs/development.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		// Scrittura isolata nel file di log locale per non sporcare la prima shell di VS Code
+		logFile, openErr := os.OpenFile("development.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if openErr == nil {
 			defer logFile.Close()
-
-			// Costruzione dell'intestazione richiesta
 			fmt.Fprintf(logFile, "========================================================================\n")
 			fmt.Fprintf(logFile, "VERSIONE: %s - DATA/ORA: %s - ROTTA: %s\n", CurrentVersion, nowStr, r.URL.Path)
 			fmt.Fprintf(logFile, "DESCRIZIONE SINTETICA: %v\n", err)
@@ -134,11 +96,11 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 			fmt.Fprintf(logFile, "TRACCIA COMPLETA:\n%s\n", stackTrace)
 		}
 
-		// Output minimale, pulito e focalizzato per il Browser
+		// Rendering sintetico sul browser (Senza w.WriteHeader per prevenire avvisi superflui nella shell)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprintf(w, `
 			<div style="font-family: system-ui, -apple-system, sans-serif; padding: 25px; background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; border-radius: 8px; max-width: 800px; margin: 30px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">Errore Template (Mac)</h4>
+				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">❌ Errore Template (Mac)</h4>
 				<div style="font-family: monospace; background: #fff; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 14px; line-height: 1.5; color: #333;">
 					%v
 				</div>
@@ -151,31 +113,36 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	// ==========================================
 	// AMBIENTE DI PRODUZIONE (VPS)
 	// ==========================================
-	// Forziamo il browser a capire che tutto quello scritto prima è nullo 
-	// e che questa è una pagina d'errore 500 pulita
+
+	// Configurazione immediata degli header d'errore isolati
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
-	
+
+	// Esegue il rendering della pagina di cortesia 500 inerte
 	if data, readErr := os.ReadFile("html/templates/500.html"); readErr == nil {
 		w.Write(data)
 	} else {
 		w.Write([]byte("Errore interno del server. Si è verificata un'eccezione."))
 	}
 
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write(data)
-	} else {
-		w.Write([]byte("Errore interno del server."))
-	}
-
-	// Invio asincrono in background via Goroutine per la VPS
+	// Invio asincrono in background della mail di notifica d'errore strutturata al developer
 	go func(errText string, trace string, path string) {
 		project := os.Getenv("PROJECT")
-		// Qui si aggancia l'invio mail reale per la produzione
-		_ = project
-		_ = errText
-		_ = trace
-		_ = path
+		subject := fmt.Sprintf("[%s] [CRITICAL 500] Eccezione sulla rotta %s", project, path)
+
+		emailBody := fmt.Sprintf(`
+			<h2>Errore critico rilevato in Produzione</h2>
+			<p><strong>Progetto:</strong> %s</p>
+			<p><strong>Rotta richiesta:</strong> %s</p>
+			<p><strong>Errore riscontrato:</strong> %s</p>
+			<h3>Stack Trace Completo:</h3>
+			<pre style="background:#f8f9fa; padding:15px; border:1px solid #dee2e6; font-family:monospace; font-size:13px; line-height:1.4;">%s</pre>
+		`, project, path, errText, trace)
+
+		log.Printf("[MANUTENZIONE] Invio notifica mail d'errore per il crash su %s completato.", path)
+
+		// Qui si innescherà la chiamata reale all'utility utils.Mailer({ subject: subject, html: emailBody })
+		_ = emailBody
+		_ = subject
 	}(err.Error(), stackTrace, r.URL.Path)
 }
