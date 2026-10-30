@@ -119,12 +119,12 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	// ==========================================
 	// AMBIENTE DI PRODUZIONE (VPS)
 	// ==========================================
-
-	// Configurazione immediata degli header d'errore isolati
+	// ==========================================
+	// AMBIENTE DI PRODUZIONE (VPS) - Allineato
+	// ==========================================
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(http.StatusInternalServerError) // <-- Deve stare SEMPRE prima di w.Write
 
-	// Esegue il rendering della pagina di cortesia 500 inerte
 	if data, readErr := os.ReadFile("html/templates/500.html"); readErr == nil {
 		w.Write(data)
 	} else {
