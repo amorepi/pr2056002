@@ -122,7 +122,7 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		// ==========================================
 
 		// Scrittura strutturata ed esplicita nel file di log locale (senza sporcare la shell)
-		logFile, openErr := os.OpenFile("development.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		logFile, openErr := os.OpenFile("logs/development.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if openErr == nil {
 			defer logFile.Close()
 
@@ -138,7 +138,7 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		fmt.Fprintf(w, `
 			<div style="font-family: system-ui, -apple-system, sans-serif; padding: 25px; background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; border-radius: 8px; max-width: 800px; margin: 30px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">❌ Errore Template (Mac)</h4>
+				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">Errore Template (Mac)</h4>
 				<div style="font-family: monospace; background: #fff; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 14px; line-height: 1.5; color: #333;">
 					%v
 				</div>
@@ -151,9 +151,18 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	// ==========================================
 	// AMBIENTE DI PRODUZIONE (VPS)
 	// ==========================================
+	// Forziamo il browser a capire che tutto quello scritto prima è nullo 
+	// e che questa è una pagina d'errore 500 pulita
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
-
+	
 	if data, readErr := os.ReadFile("html/templates/500.html"); readErr == nil {
+		w.Write(data)
+	} else {
+		w.Write([]byte("Errore interno del server. Si è verificata un'eccezione."))
+	}
+
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Write(data)
 	} else {
