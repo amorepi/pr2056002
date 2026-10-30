@@ -82,6 +82,12 @@ func main() {
 			return
 		}
 
+		// C. GESTIONE ROTTA DINAMICA DELLA DASHBOARD
+		if r.URL.Path == "/dashboard" {
+			render.RenderDashboard(w, r)
+			return
+		}
+
 		// Fallback definitivo se nessun file statico o rotta dinamica coincide
 		render.Error404Handler(w, r)
 	})

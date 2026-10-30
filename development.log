@@ -1,0 +1,58 @@
+========================================================================
+VERSIONE: v1.1.7 - DATA/ORA: 2026-10-30 06:27:48 - ROTTA: /dashboard
+DESCRIZIONE SINTETICA: template: dashboard.html:17:71: executing "body" at <.IsHalfWidth>: can't evaluate field IsHalfWidth in type render.MetricCard
+------------------------------------------------------------------------
+TRACCIA COMPLETA:
+goroutine 21 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x100e90d30, 0x2bfa183f60f0}, 0x2bfa18364140, {0x100e8f790, 0x2bfa183e64a0})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:112 +0x54
+pr2056002/pkg/render.RenderDashboard({0x100e90d30, 0x2bfa183f60f0}, 0x2bfa18364140)
+	/Users/piero/Projects/pr2056002/pkg/render/dashboard.go:93 +0x43c
+main.main.func1({0x100e90d30, 0x2bfa183f60f0}, 0x2bfa18364140)
+	/Users/piero/Projects/pr2056002/main.go:87 +0x208
+net/http.HandlerFunc.ServeHTTP(0x2bfa1845a180?, {0x100e90d30?, 0x2bfa183f60f0?}, 0x0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x2bfa184eba58?, {0x100e90d30, 0x2bfa183f60f0}, 0x2bfa18364140)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x100e90d30?, 0x2bfa183f60f0?}, 0x2bfa184ebaf8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x100e7fd88?, {0x100e90d30?, 0x2bfa183f60f0?}, 0x2bfa184ebae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x2bfa1848e000?}, {0x100e90d30?, 0x2bfa183f60f0?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x2bfa185082d0, {0x100e91600, 0x2bfa18415b30})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+========================================================================
+VERSIONE: v1.1.7 - DATA/ORA: 2026-10-30 06:38:08 - ROTTA: /dashboard
+DESCRIZIONE SINTETICA: template: dashboard.html:17:71: executing "body" at <.IsHalfWidth>: can't evaluate field IsHalfWidth in type render.MetricCard
+------------------------------------------------------------------------
+TRACCIA COMPLETA:
+goroutine 36 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1049a4d30, 0x76a8666202d0}, 0x76a866568640, {0x1049a3790, 0x76a866520ee0})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:112 +0x54
+pr2056002/pkg/render.RenderDashboard({0x1049a4d30, 0x76a8666202d0}, 0x76a866568640)
+	/Users/piero/Projects/pr2056002/pkg/render/dashboard.go:93 +0x43c
+main.main.func1({0x1049a4d30, 0x76a8666202d0}, 0x76a866568640)
+	/Users/piero/Projects/pr2056002/main.go:87 +0x208
+net/http.HandlerFunc.ServeHTTP(0x76a86653e180?, {0x1049a4d30?, 0x76a8666202d0?}, 0x0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x76a86668da58?, {0x1049a4d30, 0x76a8666202d0}, 0x76a866568640)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1049a4d30?, 0x76a8666202d0?}, 0x76a86668daf8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x104993d88?, {0x1049a4d30?, 0x76a8666202d0?}, 0x76a86668dae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x76a866584040?}, {0x1049a4d30?, 0x76a8666202d0?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x76a8665722d0, {0x1049a5600, 0x76a866511a10})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+

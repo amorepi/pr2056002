@@ -6,6 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime/debug"
+	"time"
+	// Importa il tuo pacchetto mailer se necessario, o usa una funzione interna
+	// "pr2056002/pkg/utils"
 )
 
 // Variabile globale ereditata dal main per la versione
@@ -40,8 +44,6 @@ func Layout(content string, userName string, version string) string {
 	}
 	// 2. Converte i byte in stringa e li assegna alla variabile
 	htmlContent := string(data)
-
-	fmt.Println("Passa da qui", err)
 
 	return fmt.Sprintf(htmlContent, project, logoUrl, version, userName, avatarUrl, content)
 }
@@ -98,4 +100,73 @@ func Error404Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	RenderTemplate(w, r, "404.html", http.StatusNotFound)
+}
+
+// HandleTemplateError gestisce centralmente gli errori separando l'output tra browser e file log
+func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
+	if err == nil {
+		return
+	}
+
+	// 1. Cattura dello Stack Trace e data/ora attuali
+	stackTrace := string(debug.Stack())
+	nowStr := time.Now().Format("2006-01-02 15:04:05")
+
+	// 2. Controllo dell'ambiente basato sulla presenza di /var/www
+	_, statErr := os.Stat("/var/www")
+	isProduction := statErr == nil
+
+	if !isProduction {
+		// ==========================================
+		// AMBIENTE DI SVILUPPO (Mac)
+		// ==========================================
+
+		// Scrittura strutturata ed esplicita nel file di log locale (senza sporcare la shell)
+		logFile, openErr := os.OpenFile("development.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if openErr == nil {
+			defer logFile.Close()
+
+			// Costruzione dell'intestazione richiesta
+			fmt.Fprintf(logFile, "========================================================================\n")
+			fmt.Fprintf(logFile, "VERSIONE: %s - DATA/ORA: %s - ROTTA: %s\n", CurrentVersion, nowStr, r.URL.Path)
+			fmt.Fprintf(logFile, "DESCRIZIONE SINTETICA: %v\n", err)
+			fmt.Fprintf(logFile, "------------------------------------------------------------------------\n")
+			fmt.Fprintf(logFile, "TRACCIA COMPLETA:\n%s\n", stackTrace)
+		}
+
+		// Output minimale, pulito e focalizzato per il Browser
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		fmt.Fprintf(w, `
+			<div style="font-family: system-ui, -apple-system, sans-serif; padding: 25px; background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; border-radius: 8px; max-width: 800px; margin: 30px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">❌ Errore Template (Mac)</h4>
+				<div style="font-family: monospace; background: #fff; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 14px; line-height: 1.5; color: #333;">
+					%v
+				</div>
+				<p style="margin: 15px 0 0 0; font-size: 12px; color: #718096;">I dettagli completi sono stati archiviati in <code style="background:#edf2f7; padding:2px 4px; border-radius:3px;">development.log</code></p>
+			</div>
+		`, err)
+		return
+	}
+
+	// ==========================================
+	// AMBIENTE DI PRODUZIONE (VPS)
+	// ==========================================
+	w.WriteHeader(http.StatusInternalServerError)
+
+	if data, readErr := os.ReadFile("html/templates/500.html"); readErr == nil {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(data)
+	} else {
+		w.Write([]byte("Errore interno del server."))
+	}
+
+	// Invio asincrono in background via Goroutine per la VPS
+	go func(errText string, trace string, path string) {
+		project := os.Getenv("PROJECT")
+		// Qui si aggancia l'invio mail reale per la produzione
+		_ = project
+		_ = errText
+		_ = trace
+		_ = path
+	}(err.Error(), stackTrace, r.URL.Path)
 }

@@ -1,0 +1,71 @@
+{{define "body"}}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-lg-10">
+    
+    <!-- Intestazione Pannello -->
+    <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom">
+      <div>
+        <h1 class="h2 fw-bold text-dark m-0">Informazioni generali</h1>
+        <p class="text-muted small m-0 mt-1">Stato operativo dell'infrastruttura (Scheletro Go)</p>
+      </div>
+      <span class="badge bg-dark-subtle text-dark-emphasis p-2 font-monospace">Versione App: {{.Version}}</span>
+    </div>
+
+    <!-- Gruppo 1: Griglia delle Card Metriche Hardware/Software -->
+    <div class="row g-3">
+      {{range .Metrics}}
+      <div class="{{if .IsFullWidth}}col-12{{else}}col-12 col-md-6{{if .IsHalfWidth}} col-lg-6{{end}}{{end}}">
+        <div class="card h-100 border shadow-sm {{if .IsFullWidth}}bg-body-tertiary{{else}}bg-white{{end}}">
+          <div class="card-body d-flex justify-content-between align-items-start">
+            <div>
+              <h6 class="card-subtitle mb-1 text-muted text-uppercase small fw-bold">{{.Title}}</h6>
+              <p class="card-text {{if .IsFullWidth}}fs-4 fw-bold{{else}}fs-5 fw-medium{{end}} text-dark mb-0">{{.Value}}</p>
+            </div>
+            {{if .BadgeText}}
+            <span class="badge {{.BadgeClass}} font-monospace">{{.BadgeText}}</span>
+            {{end}}
+          </div>
+        </div>
+      </div>
+      {{end}}
+    </div>
+
+    <!-- Gruppo 2: TOOLS Assistenza -->
+    <div class="mt-5">
+      <h4 class="fw-bold text-dark border-bottom pb-2 mb-2 fs-5">TOOLS Assistenza</h4>
+      <div class="row g-2">
+        {{range .Tools}}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <div class="card border shadow-sm bg-white h-100">
+            <div class="card-body d-flex align-items-center justify-content-start p-2">
+              <a href="{{.Href}}" class="btn btn-primary px-4 fw-medium shadow-sm w-100 text-truncate">
+                {{.Label}}
+              </a>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+
+    <!-- Gruppo 3: Database -->
+    <div class="mt-5 mb-5">
+      <h4 class="fw-bold text-dark border-bottom pb-2 mb-2 fs-5">Database</h4>
+      <div class="row g-2">
+        {{range .Databases}}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <div class="card border shadow-sm bg-white h-100">
+            <div class="card-body d-flex align-items-center justify-content-start p-2">
+              <a href="{{.Href}}" class="btn btn-primary px-4 fw-medium shadow-sm w-100 text-truncate">
+                {{.Label}}
+              </a>
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+
+  </div>
+</div>
+{{end}}
