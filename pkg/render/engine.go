@@ -72,7 +72,7 @@ func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	RenderTemplate(w, r, "404.html", http.StatusNotFound)
 }
 
-// HandleTemplateError centralizza i fallimenti di rendering dividendo la logica tra Mac e VPS
+// centralizza i fallimenti di rendering dividendo la logica tra Mac e VPS
 func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	if err == nil {
 		return

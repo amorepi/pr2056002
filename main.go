@@ -8,6 +8,7 @@ import (
 	"os"
 
 	// Logica degli endpoint [Ref.01]
+	"pr2056002/pkg/dashboard"
 	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 
@@ -47,7 +48,6 @@ func main() {
 		log.Fatalf("CRITICAL BLINK: Il database non risponde o non esiste nel catalogo PostgreSQL: %v", err)
 	}
 
-	// [Ref.02]
 	// Allineamento della versione globale sul motore grafico isolato
 	render.CurrentVersion = os.Getenv("APP_VERSION")
 
@@ -84,7 +84,7 @@ func main() {
 
 		// C. GESTIONE ROTTA DINAMICA DELLA DASHBOARD
 		if r.URL.Path == "/dashboard" {
-			render.RenderDashboard(w, r)
+			dashboard.RenderDashboard(w, r)
 			return
 		}
 
