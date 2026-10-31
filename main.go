@@ -8,9 +8,10 @@ import (
 	"os"
 
 	// Logica degli endpoint [Ref.01]
-	"pr2056002/pkg/dashboard"
+
 	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
+	"pr2056002/pkg/router"
 
 	// Il "_" obbliga l'inclusione di questo pacchetto anche in assenza di chiamate dirette
 	// Driver nativo PostgreSQL
@@ -54,43 +55,8 @@ func main() {
 	// ARCHITETTURA DEL ROUTING ESSENZIALE PER LA PRODUZIONE
 	mux := http.NewServeMux()
 
-	// 1. Gestione asset statici (Immagini e Logo)
-	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("html/img"))))
-
-	// 2. Handler unico per file statici espliciti e rotte applicative dinamiche
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-
-		// A. GESTIONE FILE STATICI ESPLICITI: se viene richiesto un file specifico (es. /index.html)
-		if r.URL.Path != "/" {
-			targetFile := "html" + r.URL.Path
-
-			if info, err := os.Stat(targetFile); err == nil && !info.IsDir() {
-				data, err := os.ReadFile(targetFile)
-				if err != nil {
-					render.Error404Handler(w, r)
-					return
-				}
-				w.Header().Set("Content-Type", "text/html; charset=utf-8")
-				w.Write(data)
-				return
-			}
-		}
-
-		// B. GESTIONE ROTTA DINAMICA DELLA RADICE (/)
-		if r.URL.Path == "/" {
-			render.RenderTemplate(w, r, "home.html", http.StatusOK)
-			return
-		}
-
-		// C. GESTIONE ROTTA DINAMICA DELLA DASHBOARD
-		if r.URL.Path == "/dashboard" {
-			dashboard.RenderDashboard(w, r)
-			return
-		}
-
-		// Fallback definitivo se nessun file statico o rotta dinamica coincide
-		render.Error404Handler(w, r)
-	})
+	// Affidiamo interamente la scansione e l'attivazione delle rotte al pacchetto isolato
+	router.RegisterRoutes(mux)
 
 	// 3. Avvio dell'ascolto di rete legato al router attivo
 	port := os.Getenv("PORT")

@@ -1,3 +1,5 @@
+## v1.1.17 - 31/10/2026_08:46: Continuazione lavori sulla dashboard
+
 ## v1.1.16 - 30/10/2026_17:46: Fix
 
 ## v1.1.15 - 30/10/2026_10:08: Fix

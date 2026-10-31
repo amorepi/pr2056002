@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"pr2056002/pkg/render"
 	"runtime"
 	"strconv"
 	"strings"
-
-	// Importiamo il pacchetto render per accedere a CurrentVersion e HandleTemplateError
-	"pr2056002/pkg/render"
+	"syscall"
 )
 
 // MetricCard definisce la struttura dati per le card hardware/software
@@ -43,69 +43,94 @@ type DashboardContext struct {
 	Databases   []ToolButton
 }
 
-// Helper per estrarre la RAM totale in GB sia su Mac che su Linux
-func getRamTotale() string {
-	if runtime.GOOS == "darwin" {
-		// Comando specifico per macOS
-		cmd := exec.Command("sysctl", "-n", "hw.memsize")
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		if err := cmd.Run(); err != nil {
-			return "N/D"
-		}
-		bytesVal, err := strconv.ParseFloat(strings.TrimSpace(out.String()), 64)
-		if err != nil {
-			return "N/D"
-		}
-		return fmt.Sprintf("%.1f GB", bytesVal/1024/1024/1024)
-	}
-
-	// Fallback nativo per Linux (VPS) senza syscall bloccanti su Mac
+// Helper nativo per leggere la RAM su Linux (VPS) senza comandi esterni
+func leggiRamLinux() float64 {
 	data, err := os.ReadFile("/proc/meminfo")
 	if err != nil {
-		return "N/D"
+		return 0.0
 	}
 	lines := strings.Split(string(data), "\n")
 	for _, line := range lines {
 		if strings.HasPrefix(line, "MemTotal:") {
 			fields := strings.Fields(line)
 			if len(fields) >= 2 {
-				// CORRETTO: fields[1] estrae il valore numerico in KB dalla slice di stringhe
 				kb, err := strconv.ParseFloat(fields[1], 64)
 				if err == nil {
-					return fmt.Sprintf("%.1f GB", kb/1024/1024)
+					return kb / 1024 / 1024
 				}
 			}
 		}
 	}
-	return "N/D"
+	return 0.0
 }
 
-// Calcolo dello spazio su disco sicuro per macOS e Linux tramite comando df di sistema
-func getSpazioDisco() string {
-	cmd := exec.Command("df", "-h", "/")
+// Helper nativo per leggere la RAM su Mac tramite sysctl
+func leggiRamMac() float64 {
+	cmd := exec.Command("sysctl", "-n", "hw.memsize")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	if err := cmd.Run(); err != nil {
+		return 0.0
+	}
+	bytesVal, err := strconv.ParseFloat(strings.TrimSpace(out.String()), 64)
+	if err == nil {
+		return bytesVal / 1024 / 1024 / 1024
+	}
+	return 0.0
+}
+
+// Calcolo dello spazio su disco tramite syscall
+func getSpazioDisco() string {
+	var stat syscall.Statfs_t
+	err := syscall.Statfs("/", &stat)
+	if err != nil {
 		return "Errore lettura disco"
 	}
+	all := stat.Blocks * uint64(stat.Bsize)
+	free := stat.Bfree * uint64(stat.Bsize)
 
-	lines := strings.Split(out.String(), "\n")
-	if len(lines) < 2 {
-		return "Dati disco non disponibili"
+	allGb := float64(all) / 1024 / 1024 / 1024
+	freeGb := float64(free) / 1024 / 1024 / 1024
+
+	return fmt.Sprintf("%.1f GB liberi su %.1f GB totali", freeGb, allGb)
+}
+
+// BuildTree scansiona ricorsivamente le directory per esporre la struttura ad albero
+func BuildTree(dirPath string, prefix string) string {
+	var output strings.Builder
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return prefix + " [Errore di lettura directory]\n"
 	}
 
-	// Analizza l'output della riga della root
-	fields := strings.Fields(lines[1])
-	if runtime.GOOS == "darwin" && len(fields) >= 4 {
-		// Struttura df su macOS: [Filesystem, Size, Used, Avail, ...]
-		return fmt.Sprintf("%s liberi su %s totali", fields[3], fields[1])
-	} else if len(fields) >= 4 {
-		// Struttura df su Linux standard
-		return fmt.Sprintf("%s liberi su %s totali", fields[3], fields[1])
+	var filteredFiles []os.DirEntry
+	for _, f := range files {
+		nome := f.Name()
+		if nome == "node_modules" || nome == ".git" || nome == ".gitignore" || nome == ".DS_Store" || nome == ".env" || nome == "bin" {
+			continue
+		}
+		filteredFiles = append(filteredFiles, f)
 	}
 
-	return "df output malformato"
+	for index, file := range filteredFiles {
+		fullPath := filepath.Join(dirPath, file.Name())
+		isLast := index == len(filteredFiles)-1
+		marker := "├── "
+		if isLast {
+			marker = "└── "
+		}
+
+		output.WriteString(fmt.Sprintf("%s%s%s\n", prefix, marker, file.Name()))
+
+		if file.IsDir() {
+			newPrefix := prefix + "│   "
+			if isLast {
+				newPrefix = prefix + "    "
+			}
+			output.WriteString(BuildTree(fullPath, newPrefix))
+		}
+	}
+	return output.String()
 }
 
 // RenderDashboard compila la Dashboard estraendo i dati reali della macchina
@@ -117,7 +142,20 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	sistemaOperativo := fmt.Sprintf("%s (%s)", runtime.GOOS, runtime.GOARCH)
 	versioneGo := runtime.Version()
 	spazioDisco := getSpazioDisco()
-	ramValore := getRamTotale()
+
+	var ramTotale float64
+	if runtime.GOOS == "darwin" {
+		ramTotale = leggiRamMac()
+	} else {
+		ramTotale = leggiRamLinux()
+	}
+
+	var ramValore string
+	if ramTotale > 0 {
+		ramValore = fmt.Sprintf("%.1f GB totali rilevati", ramTotale)
+	} else {
+		ramValore = "Rilevazione hardware fallita"
+	}
 
 	metrics := []MetricCard{
 		{Title: "Sistema operativo", Value: template.HTML(sistemaOperativo), IsFullWidth: false, IsHalfWidth: false},
@@ -145,7 +183,7 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		LogoUrl:     logoUrl,
 		AvatarUrl:   avatarUrl,
 		UserName:    "Amministratore",
-		Version:     render.CurrentVersion, // Recuperata dal pacchetto render
+		Version:     render.CurrentVersion,
 		Metrics:     metrics,
 		Tools:       tools,
 		Databases:   databases,
@@ -164,7 +202,7 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
-		render.HandleTemplateError(w, r, err) // Invia l'errore al gestore centralizzato
+		render.HandleTemplateError(w, r, err)
 		return
 	}
 
