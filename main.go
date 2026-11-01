@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"pr2056002/pkg/dashboard"
 	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 	"pr2056002/pkg/router"
@@ -38,6 +39,9 @@ func main() {
 
 	// 2. Allineamento della versione globale sul motore grafico isolato
 	render.CurrentVersion = os.Getenv("APP_VERSION")
+
+	// Passa la connessione al package dashboard
+	dashboard.SetDatabase(db)
 
 	// 3. ARCHITETTURA DEL ROUTING RIGENERATA
 	mux := http.NewServeMux()

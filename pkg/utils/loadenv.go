@@ -29,16 +29,15 @@ func InizializzaAmbiente() {
 	var logPathNginx string
 
 	if isProduction {
-		// Configurazione assoluta per la VPS Linux
 		logPathGo = "/var/log/nginx/pr2056002_go.log"
 		logPathNginx = "/var/log/nginx/pr2056002_ssl_error.log"
 	} else {
-		// Configurazione relativa per l'ambiente di sviluppo Mac
-		logPathGo = "golang.log"
+		// Assicuriamoci che si chiami esattamente development.log
+		logPathGo = "development.log"
 		logPathNginx = "/opt/homebrew/var/log/nginx/error.log"
 	}
 
-	// Allineamo le variabili d'ambiente a runtime per l'utilizzo nei bottoni della Dashboard
+	// Questa istruzione è fondamentale! Forza Go a mettere il percorso in memoria
 	os.Setenv("LOG_PATH_GO", logPathGo)
 	os.Setenv("LOG_PATH_NGINX", logPathNginx)
 

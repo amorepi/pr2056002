@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-	"time"
+
+	// Importiamo l'utility del mailer per attivare le notifiche reali sulla VPS
+	"pr2056002/pkg/utils"
 )
 
 // Variabile globale allineata dal main per tracciare la versione dell'applicazione
@@ -46,16 +48,13 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 		return
 	}
 
-	// Creiamo un buffer temporaneo per testare il rendering in isolamento
 	var buf bytes.Buffer
 	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
-		// Se fallisce qui, il buffer viene buttato e la risposta rimane pulita
 		HandleTemplateError(w, r, err)
 		return
 	}
 
-	// Se tutto è andato a buon fine, inviamo l'intestazione e i byte accumulati
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(statusCode)
 	_, _ = buf.WriteTo(w)
@@ -72,80 +71,116 @@ func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	RenderTemplate(w, r, "404.html", http.StatusNotFound)
 }
 
-// centralizza i fallimenti di rendering dividendo la logica tra Mac e VPS
+// HandleTemplateError centralizza i fallimenti di rendering dividendo la logica tra Mac e VPS
 func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	if err == nil {
 		return
 	}
 
-	// 1. Cattura dello Stack Trace e formattazione temporale
+	// 1. CATTURA PRIVATA DELLO STACK TRACE COMPLETO
 	stackTrace := string(debug.Stack())
-	nowStr := time.Now().Format("2006-01-02 15:04:05")
 
-	// 2. Controllo hardware dell'ambiente: se la cartella esiste, siamo sulla VPS
+	// 2. SCRITTURA DIRETTA SU DISCO (Terminale pulito con 1 sola riga)
+	log.Printf("[ECCEZIONE 500] sulla rotta %s -> %v", r.URL.Path, err)
+
+	// Determiniamo il file corretto in base all'ambiente hardware rilevato
 	_, statErr := os.Stat("/var/www")
 	isProduction := statErr == nil
 
+	logPath := "development.log"
+	if isProduction {
+		logPath = "/var/log/nginx/pr2056002_go.log"
+	}
+
+	// Forziamo la scrittura dello Stack Trace esteso all'interno del file fisico (Valido per Mac e VPS)
+	if f, fileErr := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); fileErr == nil {
+		_, _ = f.WriteString(fmt.Sprintf("--- STACK TRACE SEPARATO ---\n%s\n--------------------------------------\n", stackTrace))
+		f.Close()
+	} else {
+		log.Printf("[AVVISO MANUTENZIONE]: Impossibile scrivere lo stack trace su %s: %v", logPath, fileErr)
+	}
+
 	if !isProduction {
 		// ==========================================
-		// AMBIENTE DI SVILUPPO (Mac)
+		// AMBIENTE DI SVILUPPO (Mac) - CON BARRA MENU
 		// ==========================================
-
-		// Scrittura isolata nel file di log locale per non sporcare la prima shell di VS Code
-		logFile, openErr := os.OpenFile("development.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if openErr == nil {
-			defer logFile.Close()
-			fmt.Fprintf(logFile, "========================================================================\n")
-			fmt.Fprintf(logFile, "VERSIONE: %s - DATA/ORA: %s - ROTTA: %s\n", CurrentVersion, nowStr, r.URL.Path)
-			fmt.Fprintf(logFile, "DESCRIZIONE SINTETICA: %v\n", err)
-			fmt.Fprintf(logFile, "------------------------------------------------------------------------\n")
-			fmt.Fprintf(logFile, "TRACCIA COMPLETA:\n%s\n", stackTrace)
+		project := os.Getenv("PROJECT")
+		data := PageContext{
+			ProjectName: project,
+			LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
+			AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
+			UserName:    "Amministratore",
+			Version:     CurrentVersion,
 		}
 
-		// Rendering sintetico sul browser (Senza w.WriteHeader per prevenire avvisi superflui nella shell)
+		layoutPath := "html/templates/layout.html"
+		pagePath := "html/templates/errore-sviluppo.html"
+
+		tmplt, parseErr := template.ParseFiles(layoutPath, pagePath)
+		if parseErr != nil {
+			dir, _ := os.Getwd()
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "Errore critico durante il parsing d'emergenza. Cartella attuale su Mac: %s. Dettaglio: %v", dir, parseErr)
+			return
+		}
+
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprintf(w, `
-			<div style="font-family: system-ui, -apple-system, sans-serif; padding: 25px; background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; border-radius: 8px; max-width: 800px; margin: 30px auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-				<h4 style="margin: 0 0 10px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">Errore Template (Mac)</h4>
-				<div style="font-family: monospace; background: #fff; padding: 15px; border: 1px solid #dee2e6; border-radius: 4px; font-size: 14px; line-height: 1.5; color: #333;">
-					%v
-				</div>
-				<p style="margin: 15px 0 0 0; font-size: 12px; color: #718096;">I dettagli completi sono stati archiviati in <code style="background:#edf2f7; padding:2px 4px; border-radius:3px;">development.log</code></p>
-			</div>
-		`, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = tmplt.ExecuteTemplate(w, "layout", data)
 		return
 	}
 
 	// ==========================================
-	// AMBIENTE DI PRODUZIONE (VPS)
+	// AMBIENTE DI PRODUZIONE (VPS) - CON BARRA MENU E NOTIFICA REALE VIA EMAIL
 	// ==========================================
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusInternalServerError) // <-- Deve stare SEMPRE prima di w.Write
-
-	if data, readErr := os.ReadFile("html/templates/500.html"); readErr == nil {
-		w.Write(data)
-	} else {
-		w.Write([]byte("Errore interno del server. Si è verificata un'eccezione."))
+	project := os.Getenv("PROJECT")
+	data := PageContext{
+		ProjectName: project,
+		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
+		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
+		UserName:    "Amministratore",
+		Version:     CurrentVersion,
 	}
 
-	// Invio asincrono in background della mail di notifica d'errore strutturata al developer
-	go func(errText string, trace string, path string) {
-		project := os.Getenv("PROJECT")
-		subject := fmt.Sprintf("[%s] [CRITICAL 500] Eccezione sulla rotta %s", project, path)
+	// Eseguiamo l'incastro regolare di 500.html dentro il layout standard (Barra dei menu fissa)
+	layoutPath := "html/templates/layout.html"
+	pagePath := "html/templates/500.html"
 
+	tmplt, parseErr := template.ParseFiles(layoutPath, pagePath)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusInternalServerError)
+
+	if parseErr == nil {
+		_ = tmplt.ExecuteTemplate(w, "layout", data)
+	} else {
+		w.Write([]byte("Errore interno del server. Si è verificata un'eccezione critica."))
+	}
+
+	// VITALIZZAZIONE: Invio asincrono REALE in background della mail d'allerta al developer
+	go func(errText string, trace string, path string) {
+		subject := fmt.Sprintf("[%s] [CRITICAL 500] Eccezione sulla rotta %s", project, path)
 		emailBody := fmt.Sprintf(`
-			<h2>Errore critico rilevato in Produzione</h2>
-			<p><strong>Progetto:</strong> %s</p>
-			<p><strong>Rotta richiesta:</strong> %s</p>
-			<p><strong>Errore riscontrato:</strong> %s</p>
-			<h3>Stack Trace Completo:</h3>
-			<pre style="background:#f8f9fa; padding:15px; border:1px solid #dee2e6; font-family:monospace; font-size:13px; line-height:1.4;">%s</pre>
+			<div style="font-family:sans-serif; padding:20px; color:#333;">
+				<h2 style="color:#d9534f; border-bottom:2px solid #d9534f; padding-bottom:10px;">Errore critico rilevato in Produzione (VPS)</h2>
+				<p><strong>Progetto di riferimento:</strong> %s</p>
+				<p><strong>Rotta che ha generato il crash:</strong> <code style="background:#f1f1f1; padding:2px 6px; border-radius:4px;">%s</code></p>
+				<p><strong>Messaggio d'errore:</strong> <span style="color:#c9302c; font-weight:bold;">%s</span></p>
+				<h3 style="margin-top:30px;">Stack Trace Completo:</h3>
+				<pre style="background:#f8f9fa; padding:15px; border:1px solid #dee2e6; font-family:monospace; font-size:13px; line-height:1.4; overflow:auto; max-height:500px; color:#555;">%s</pre>
+			</div>
 		`, project, path, errText, trace)
 
-		log.Printf("[MANUTENZIONE] Invio notifica mail d'errore per il crash su %s completato.", path)
+		payload := utils.MailerPayload{
+			Subject: subject,
+			Html:    emailBody,
+		}
 
-		// Qui si innescherà la chiamata reale all'utility utils.Mailer({ subject: subject, html: emailBody })
-		_ = emailBody
-		_ = subject
+		// Esegue l'invio asincrono effettivo su Gmail
+		if mailErr := utils.InviaEmail(payload); mailErr != nil {
+			log.Printf("[MANUTENZIONE ERRORE]: Invio notifica mail fallito: %v", mailErr)
+		} else {
+			log.Printf("[MANUTENZIONE] Notifica mail d'errore per il crash su %s spedita con successo.", path)
+		}
 	}(err.Error(), stackTrace, r.URL.Path)
 }

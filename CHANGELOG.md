@@ -1,3 +1,5 @@
+## v1.1.19 - 01/11/2026_17:01: Fix
+
 ## v1.1.18 - 31/10/2026_11:01: Load del variabili di ambiente - continuazione dashboard
 
 ## v1.1.17 - 31/10/2026_08:46: Continuazione lavori sulla dashboard

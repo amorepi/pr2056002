@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"pr2056002/pkg/dashboard"
@@ -14,7 +15,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 
 	// 2. Handler unico centralizzato (Controllo di precedenza file statici espliciti e smistamento)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// A. GESTIONE FILE STATICI ESPLICITI (es. /index.html)
+		// GESTIONE FILE STATICI ESPLICITI (es. /index.html)
 		if r.URL.Path != "/" && r.URL.Path != "/dashboard" && r.URL.Path != "/Structure" && r.URL.Path != "/view-todo" && r.URL.Path != "/view-tags" {
 			targetFile := "html" + r.URL.Path
 			if info, err := os.Stat(targetFile); err == nil && !info.IsDir() {
@@ -29,33 +30,65 @@ func RegisterRoutes(mux *http.ServeMux) {
 			}
 		}
 
-		// B. ROTTA DINAMICA DELLA RADICE (/) -> Home Page
+		// ROTTA DINAMICA DELLA RADICE (/) -> Home Page
 		if r.URL.Path == "/" {
 			render.RenderTemplate(w, r, "home.html", http.StatusOK)
 			return
 		}
 
-		// C. ROTTA DINAMICA DELLA DASHBOARD
+		// ROTTA DINAMICA DELLA DASHBOARD
 		if r.URL.Path == "/dashboard" {
 			dashboard.RenderDashboard(w, r)
 			return
 		}
 
-		// D. TOOLS ASSISTENZA: Mappa Albero File
+		// TOOLS ASSISTENZA: Mappa Albero File
 		if r.URL.Path == "/Structure" {
 			dashboard.StructureHandler(w, r)
 			return
 		}
 
-		// E. TOOLS ASSISTENZA: Visualizzatore Todo (NEWTAGS.md)
+		// TOOLS ASSISTENZA: Visualizzatore Todo (NEWTAGS.md)
 		if r.URL.Path == "/view-todo" {
 			dashboard.ViewMarkdownHandler(w, r, "NEWTAGS.md", "Lista TODO", "Pianificazione dello sviluppo, middleware e regole generali del progetto")
 			return
 		}
 
-		// F. TOOLS ASSISTENZA: Visualizzatore Changelog (CHANGELOG.md)
+		// TOOLS ASSISTENZA: Visualizzatore Changelog (CHANGELOG.md)
 		if r.URL.Path == "/view-tags" {
 			dashboard.ViewMarkdownHandler(w, r, "CHANGELOG.md", "Registro Storico Rilasci (Changelog)", "Revisione dei tag di produzione e cache bursting applicativo")
+			return
+		}
+
+		// Tabella Utenti
+		if r.URL.Path == "/allUsers" {
+			dashboard.AllUsersHandler(w, r)
+			return
+		}
+
+		// Clic del pulsante "Invio email"
+		if r.URL.Path == "/send-test-email" {
+			dashboard.SendTestEmailHandler(w, r)
+			return
+		}
+
+		// SIMULAZIONE ERRORE 404
+		if r.URL.Path == "/test-error-404" {
+			render.Error404Handler(w, r)
+			return
+		}
+
+		// SIMULAZIONE ERRORE 500
+		if r.URL.Path == "/test-error-500" {
+			// Creiamo un errore finto intenzionale per innescare HandleTemplateError
+			errFake := fmt.Errorf("TEST ECCEZIONE 500 - Verifica allerta Mailer e pagina di cortesia")
+			render.HandleTemplateError(w, r, errFake)
+			return
+		}
+
+		// STRUMENTO: Lettura e formattazione del diario in ordine cronologico inverso
+		if r.URL.Path == "/development-log" {
+			dashboard.DevelopmentLogHandler(w, r)
 			return
 		}
 

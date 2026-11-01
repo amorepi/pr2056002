@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Errore 500 - Servizio Temporaneamente non Disponibile</title>
-  <link href="https://jsdelivr.net" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-</head>
-<body class="bg-light">
-  <div class="container">
-    <div class="row justify-content-center align-items-center min-vh-100">
-      <div class="col-12 col-md-8 col-lg-6 text-center">
-        <div class="p-5 bg-white border rounded shadow-sm my-5">
-          <h1 class="display-1 fw-bold text-danger mb-2">500</h1>
-          <h2 class="fw-bold text-dark mb-3">Servizio Sovraccarico</h2>
-          <p class="text-secondary mb-4">La squadra tecnica è stata avvisata automaticamente. Ti invitiamo a riprovare tra poco.</p>
-          <div class="d-flex gap-2 justify-content-center">
-            <button onclick="window.location.reload();" class="btn btn-primary px-4 fw-medium shadow-sm">Aggiorna la Pagina</button>
-            <a href="/" class="btn btn-outline-secondary px-4 fw-medium">Torna alla Home</a>
-          </div>
-        </div>
+{{define "body"}}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    <div class="p-5 bg-white border rounded shadow-sm">
+      <div class="text-danger mb-4">
+        <svg xmlns="http://w3.org" width="64" height="64" fill="currentColor" class="bi bi-exclamation-octagon-fill d-inline-block" viewBox="0 0 16 16">
+          <path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353zm-6.143 5.1A.5.5 0 0 1 5.5 5H5.7a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H5.5a.5.5 0 0 1-.5-.5v-4zm2.18 6a.6.6 0 1 1 0-1.2.6.6 0 0 1 0 1.2"/>
+        </svg>
       </div>
+      <h2 class="fw-bold text-dark mb-3">Errore Interno del Server</h2>
+      <p class="text-secondary mb-0">Si è verificata un'anomalia imprevista. Il team di sviluppo è stato notificato automaticamente via email ed è già al lavoro per risolvere il problema.</p>
     </div>
   </div>
-</body>
-</html>
-
+</div>
+{{end}}

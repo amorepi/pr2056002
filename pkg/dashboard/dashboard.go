@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -41,6 +42,13 @@ type DashboardContext struct {
 	Metrics     []MetricCard
 	Tools       []ToolButton
 	Databases   []ToolButton
+}
+
+var db *sql.DB // Conserva l'istanza della connessione a PostgreSQL
+
+// SetDatabase riceve la connessione attiva dal main.go
+func SetDatabase(database *sql.DB) {
+	db = database
 }
 
 // Helper nativo per leggere la RAM su Linux (VPS) senza comandi esterni
@@ -164,18 +172,20 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		{Title: "Memoria RAM Fisico", Value: template.HTML(ramValore), BadgeText: "Ottimale", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
 		{Title: "Archiviazione Disco (Root)", Value: template.HTML(spazioDisco), IsFullWidth: false, IsHalfWidth: false},
 		{Title: "Motore Database", Value: "PostgreSQL 17 (Connesso)", BadgeText: "Operativo", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Database Istanziati attivi", Value: `1 <span class="fs-6 fw-normal text-muted">unità logica registrata nel catalogo</span>`, IsFullWidth: true, IsHalfWidth: false},
 	}
 
 	tools := []ToolButton{
-		{Href: "/api/health", Label: "Health Check"},
 		{Href: "/Structure", Label: "view-Structure"},
 		{Href: "/view-todo", Label: "view-todo"},
 		{Href: "/view-tags", Label: "view-tags"},
+		{Href: "/send-test-email", Label: "Invio email"},
+		{Href: "/test-error-404", Label: "Test Error 404"},
+		{Href: "/test-error-500", Label: "Test Error 500"},
+		{Href: "/development-log", Label: "Development log"},
 	}
 
 	databases := []ToolButton{
-		{Href: "/allUsers", Label: "Collection Users"},
+		{Href: "/allUsers", Label: "Tabella Utenti"},
 	}
 
 	data := DashboardContext{

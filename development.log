@@ -1,58 +1,25 @@
-========================================================================
-VERSIONE: v1.1.11 - DATA/ORA: 2026-10-30 08:58:23 - ROTTA: /dashboard
-DESCRIZIONE SINTETICA: template: dashboard.html:17:71: executing "body" at <.IsHalfWidth>: can't evaluate field IsHalfWidth in type render.MetricCard
-------------------------------------------------------------------------
-TRACCIA COMPLETA:
+2026/11/01 13:05:12 engine.go:85: [ECCEZIONE 500] sulla rotta /test-error-500 -> TEST ECCEZIONE 500 - Verifica allerta Mailer e pagina di cortesia
+--- STACK TRACE SEPARATO ---
 goroutine 21 [running]:
 runtime/debug.Stack()
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
-pr2056002/pkg/render.HandleTemplateError({0x100be4cc0, 0x6b2018a040f0}, 0x6b2018802140, {0x100be3720, 0x6b201887c4a0})
-	/Users/piero/Projects/pr2056002/pkg/render/engine.go:82 +0x54
-pr2056002/pkg/render.RenderDashboard({0x100be4cc0, 0x6b2018a040f0}, 0x6b2018802140)
-	/Users/piero/Projects/pr2056002/pkg/render/dashboard.go:96 +0x3d4
-main.main.func1({0x100be4cc0, 0x6b2018a040f0}, 0x6b2018802140)
-	/Users/piero/Projects/pr2056002/main.go:87 +0x208
-net/http.HandlerFunc.ServeHTTP(0x6b20188e2180?, {0x100be4cc0?, 0x6b2018a040f0?}, 0x0?)
+pr2056002/pkg/render.HandleTemplateError({0x101031b20, 0x5b29dc7a25a0}, 0x5b29dc770c80, {0x10102ee10, 0x5b29dc733590})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/router.RegisterRoutes.func1({0x101031b20, 0x5b29dc7a25a0}, 0x5b29dc770c80)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:85 +0x5cc
+net/http.HandlerFunc.ServeHTTP(0x5b29dc74e180?, {0x101031b20?, 0x5b29dc7a25a0?}, 0x0?)
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
-net/http.(*ServeMux).ServeHTTP(0x6b2018969a58?, {0x100be4cc0, 0x6b2018a040f0}, 0x6b2018802140)
+net/http.(*ServeMux).ServeHTTP(0x5b29dc6f5a58?, {0x101031b20, 0x5b29dc7a25a0}, 0x5b29dc770c80)
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
-pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x100be4cc0?, 0x6b2018a040f0?}, 0x6b2018969af8?)
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x101031b20?, 0x5b29dc7a25a0?}, 0x5b29dc6f5af8?)
 	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
-net/http.HandlerFunc.ServeHTTP(0x100bd3d18?, {0x100be4cc0?, 0x6b2018a040f0?}, 0x6b2018969ae0?)
+net/http.HandlerFunc.ServeHTTP(0x1010203e8?, {0x101031b20?, 0x5b29dc7a25a0?}, 0x5b29dc6f5ae0?)
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
-net/http.serverHandler.ServeHTTP({0x6b201889a580?}, {0x100be4cc0?, 0x6b2018a040f0?}, 0x1?)
+net/http.serverHandler.ServeHTTP({0x5b29dc69c000?}, {0x101031b20?, 0x5b29dc7a25a0?}, 0x1?)
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
-net/http.(*conn).serve(0x6b20189182d0, {0x100be5590, 0x6b201889fb30})
+net/http.(*conn).serve(0x5b29dc77a2d0, {0x1010323f0, 0x5b29dc709b60})
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
 created by net/http.(*Server).Serve in goroutine 1
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
 
-========================================================================
-VERSIONE: v1.1.13 - DATA/ORA: 2026-10-30 09:17:27 - ROTTA: /dashboard
-DESCRIZIONE SINTETICA: template: dashboard.html:17:71: executing "body" at <.IsHalfWidth>: can't evaluate field IsHalfWidth in type render.MetricCard
-------------------------------------------------------------------------
-TRACCIA COMPLETA:
-goroutine 21 [running]:
-runtime/debug.Stack()
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
-pr2056002/pkg/render.HandleTemplateError({0x102ba0cc0, 0x22c9707c42d0}, 0x22c97077e640, {0x102b9f720, 0x22c970720f20})
-	/Users/piero/Projects/pr2056002/pkg/render/engine.go:82 +0x54
-pr2056002/pkg/render.RenderDashboard({0x102ba0cc0, 0x22c9707c42d0}, 0x22c97077e640)
-	/Users/piero/Projects/pr2056002/pkg/render/dashboard.go:96 +0x3d4
-main.main.func1({0x102ba0cc0, 0x22c9707c42d0}, 0x22c97077e640)
-	/Users/piero/Projects/pr2056002/main.go:87 +0x208
-net/http.HandlerFunc.ServeHTTP(0x22c970762180?, {0x102ba0cc0?, 0x22c9707c42d0?}, 0x0?)
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
-net/http.(*ServeMux).ServeHTTP(0x22c970869a58?, {0x102ba0cc0, 0x22c9707c42d0}, 0x22c97077e640)
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
-pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x102ba0cc0?, 0x22c9707c42d0?}, 0x22c970869af8?)
-	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
-net/http.HandlerFunc.ServeHTTP(0x102b8fd18?, {0x102ba0cc0?, 0x22c9707c42d0?}, 0x22c970869ae0?)
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
-net/http.serverHandler.ServeHTTP({0x22c97080c000?}, {0x102ba0cc0?, 0x22c9707c42d0?}, 0x1?)
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
-net/http.(*conn).serve(0x22c9707a02d0, {0x102ba1590, 0x22c97071fb30})
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
-created by net/http.(*Server).Serve in goroutine 1
-	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
-
+--------------------------------------
