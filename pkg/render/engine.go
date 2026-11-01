@@ -12,10 +12,8 @@ import (
 	"pr2056002/pkg/utils"
 )
 
-// Variabile globale allineata dal main per tracciare la versione dell'applicazione
 var CurrentVersion string
 
-// PageContext definisce la struttura dati per il layout agnostico standard (Header/Navbar)
 type PageContext struct {
 	ProjectName string
 	LogoUrl     string
@@ -24,7 +22,6 @@ type PageContext struct {
 	Version     string
 }
 
-// MailAlertContext definisce i parametri richiesti dal template alert-mail.html
 type MailAlertContext struct {
 	ProjectName  string
 	Path         string
@@ -32,7 +29,6 @@ type MailAlertContext struct {
 	StackTrace   string
 }
 
-// RenderTemplate esegue il rendering atomico tramite buffer di memoria
 func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string, statusCode int) {
 	project := os.Getenv("PROJECT")
 	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
@@ -67,7 +63,6 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 	_, _ = buf.WriteTo(w)
 }
 
-// Error404Handler intercetta le risorse inesistenti smistando l'output tra JSON (API) e HTML grafico
 func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
 		w.Header().Set("Content-Type", "application/json")
@@ -78,16 +73,12 @@ func Error404Handler(w http.ResponseWriter, r *http.Request) {
 	RenderTemplate(w, r, "404.html", http.StatusNotFound)
 }
 
-// HandleTemplateError centralizza i fallimenti di rendering dividendo la logica tra Mac e VPS
 func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	if err == nil {
 		return
 	}
 
-	// 1. CATTURA PRIVATA DELLO STACK TRACE COMPLETO
 	stackTrace := string(debug.Stack())
-
-	// 2. SCRITTURA DIRETTA SU DISCO (Terminale pulito con 1 sola riga)
 	log.Printf("[ECCEZIONE 500] sulla rotta %s -> %v", r.URL.Path, err)
 
 	_, statErr := os.Stat("/var/www")
@@ -101,16 +92,11 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	if f, fileErr := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); fileErr == nil {
 		_, _ = f.WriteString(fmt.Sprintf("--- STACK TRACE SEPARATO ---\n%s\n--------------------------------------\n", stackTrace))
 		f.Close()
-	} else {
-		log.Printf("[AVVISO MANUTENZIONE]: Impossibile scrivere lo stack trace su %s: %v", logPath, fileErr)
 	}
 
 	project := os.Getenv("PROJECT")
 
 	if !isProduction {
-		// ==========================================
-		// AMBIENTE DI SVILUPPO (Mac) - CON BARRA MENU
-		// ==========================================
 		data := PageContext{
 			ProjectName: project,
 			LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
@@ -124,10 +110,9 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 
 		tmplt, parseErr := template.ParseFiles(layoutPath, pagePath)
 		if parseErr != nil {
-			dir, _ := os.Getwd()
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Errore critico durante il parsing d'emergenza. Cartella attuale su Mac: %s. Dettaglio: %v", dir, parseErr)
+			fmt.Fprintf(w, "Errore critico durante il parsing d'emergenza: %v", parseErr)
 			return
 		}
 
@@ -137,9 +122,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		return
 	}
 
-	// ==========================================
-	// AMBIENTE DI PRODUZIONE (VPS) - CON NOTIFICA REALE ESTERNA HTML VIA TEMPLATE
-	// ==========================================
 	data := PageContext{
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
@@ -161,12 +143,10 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		w.Write([]byte("Errore interno del server. Si è verificata un'eccezione critica."))
 	}
 
-	// Invio asincrono tramite caricamento e compilazione pulita di alert-mail.html
 	go func(errText string, trace string, path string) {
 		mailTemplatePath := "html/templates/alert-mail.html"
 		tmpltMail, err := template.ParseFiles(mailTemplatePath)
 		if err != nil {
-			log.Printf("[MAILER ERRORE]: Impossibile trovare il template email %s: %v", mailTemplatePath, err)
 			return
 		}
 
@@ -179,7 +159,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 
 		var mailBuffer bytes.Buffer
 		if err := tmpltMail.Execute(&mailBuffer, mailData); err != nil {
-			log.Printf("[MAILER ERRORE]: Errore compilazione template email: %v", err)
 			return
 		}
 
@@ -188,10 +167,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 			Html:    mailBuffer.String(),
 		}
 
-		if mailErr := utils.InviaEmail(payload); mailErr != nil {
-			log.Printf("[MANUTENZIONE ERRORE]: Invio notifica mail fallito: %v", mailErr)
-		} else {
-			log.Printf("[MANUTENZIONE] Notifica mail d'errore per il crash su %s spedita con successo.", path)
-		}
+		_ = utils.InviaEmail(payload)
 	}(err.Error(), stackTrace, r.URL.Path)
 }

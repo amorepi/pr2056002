@@ -1,23 +1,21 @@
 {{define "body"}}
 <div class="row justify-content-center">
   <div class="col-12 col-lg-10">
+    
     <div class="mb-4 pb-2 border-bottom">
       <h1 class="h2 fw-bold text-dark m-0">Struttura Albero Progetto</h1>
       <p class="text-muted small m-0 mt-1">Mappa in tempo reale dei file e delle directory</p>
     </div>
+    
     <div class="card border-0 shadow-sm overflow-hidden">
       <div class="card-header bg-dark text-white-50 d-flex align-items-center py-2 px-3">
-        <div class="d-flex gap-1 me-3">
-          <span class="bg-danger rounded-circle d-inline-block" style="width:10px; height:10px;"></span>
-          <span class="bg-warning rounded-circle d-inline-block" style="width:10px; height:10px;"></span>
-          <span class="bg-success rounded-circle d-inline-block" style="width:10px; height:10px;"></span>
-        </div>
-        <span class="small font-monospace text-light">terminale@{{.ProjectName}}: ~ tree</span>
+        <span class="small font-monospace text-light">Progetto Applicativo: {{.ProjectName}}</span>
       </div>
-      <div class="card-body bg-dark text-success p-3" style="background-color: #1e1e1e !important;">
-        <pre class="mb-0 font-monospace" style="white-space: pre-wrap; font-size: 0.85rem; line-height: 1.4; color: #4af626;"><code class="text-success">{{.TreeOutput}}</code></pre>
+      <div class="card-body bg-dark p-3" style="background-color: #1e1e1e !important;">
+        <pre class="mb-0 font-monospace" style="white-space: pre-wrap; font-size: 0.85rem; line-height: 1.5; color: #4af626; word-break: break-all;"><code>{{.TreeOutput}}</code></pre>
       </div>
     </div>
+
   </div>
 </div>
 {{end}}
