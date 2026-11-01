@@ -9,7 +9,6 @@ import (
 	"os"
 	"runtime/debug"
 
-	// Importiamo l'utility del mailer per attivare le notifiche reali sulla VPS
 	"pr2056002/pkg/utils"
 )
 
@@ -23,6 +22,14 @@ type PageContext struct {
 	AvatarUrl   string
 	UserName    string
 	Version     string
+}
+
+// MailAlertContext definisce i parametri richiesti dal template alert-mail.html
+type MailAlertContext struct {
+	ProjectName  string
+	Path         string
+	ErrorMessage string
+	StackTrace   string
 }
 
 // RenderTemplate esegue il rendering atomico tramite buffer di memoria
@@ -83,7 +90,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	// 2. SCRITTURA DIRETTA SU DISCO (Terminale pulito con 1 sola riga)
 	log.Printf("[ECCEZIONE 500] sulla rotta %s -> %v", r.URL.Path, err)
 
-	// Determiniamo il file corretto in base all'ambiente hardware rilevato
 	_, statErr := os.Stat("/var/www")
 	isProduction := statErr == nil
 
@@ -92,7 +98,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		logPath = "/var/log/nginx/pr2056002_go.log"
 	}
 
-	// Forziamo la scrittura dello Stack Trace esteso all'interno del file fisico (Valido per Mac e VPS)
 	if f, fileErr := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644); fileErr == nil {
 		_, _ = f.WriteString(fmt.Sprintf("--- STACK TRACE SEPARATO ---\n%s\n--------------------------------------\n", stackTrace))
 		f.Close()
@@ -100,11 +105,12 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		log.Printf("[AVVISO MANUTENZIONE]: Impossibile scrivere lo stack trace su %s: %v", logPath, fileErr)
 	}
 
+	project := os.Getenv("PROJECT")
+
 	if !isProduction {
 		// ==========================================
 		// AMBIENTE DI SVILUPPO (Mac) - CON BARRA MENU
 		// ==========================================
-		project := os.Getenv("PROJECT")
 		data := PageContext{
 			ProjectName: project,
 			LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
@@ -132,9 +138,8 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	// ==========================================
-	// AMBIENTE DI PRODUZIONE (VPS) - CON BARRA MENU E NOTIFICA REALE VIA EMAIL
+	// AMBIENTE DI PRODUZIONE (VPS) - CON NOTIFICA REALE ESTERNA HTML VIA TEMPLATE
 	// ==========================================
-	project := os.Getenv("PROJECT")
 	data := PageContext{
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
@@ -143,7 +148,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		Version:     CurrentVersion,
 	}
 
-	// Eseguiamo l'incastro regolare di 500.html dentro il layout standard (Barra dei menu fissa)
 	layoutPath := "html/templates/layout.html"
 	pagePath := "html/templates/500.html"
 
@@ -157,36 +161,33 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		w.Write([]byte("Errore interno del server. Si è verificata un'eccezione critica."))
 	}
 
-	// VITALIZZAZIONE: Invio asincrono REALE in background della mail d'allerta al developer
+	// Invio asincrono tramite caricamento e compilazione pulita di alert-mail.html
 	go func(errText string, trace string, path string) {
-		// Pulizia di sicurezza: isoliamo i testi per evitare che si tirino dietro script o stili della pagina
-		pulitoErrText := template.HTMLEscapeString(errText)
-
-		// Per lo Stack Trace, sostituiamo i ritorni a capo con tag <br> per renderlo leggibile nella mail
-		// ma lo manteniamo isolato dentro un blocco di testo puro
-		pulitoTrace := template.HTMLEscapeString(trace)
-
-		subject := fmt.Sprintf("[%s] [CRITICAL 500] Eccezione sulla rotta %s", project, path)
-
-		// Confezioniamo un HTML super leggero, privo di script, css o stili Bootstrap esterni
-		emailBody := fmt.Sprintf(`
-			<div style="font-family:sans-serif; padding:20px; color:#333; max-width:800px; margin:0 auto; background:#fff; border:1px solid #eee; border-radius:5px;">
-				<h2 style="color:#d9534f; border-bottom:2px solid #d9534f; padding-bottom:10px; margin-top:0;">⚠️ Allerta Errore Critico 500 (VPS)</h2>
-				<p style="font-size:15px; margin-bottom:8px;"><strong>Progetto applicativo:</strong> %s</p>
-				<p style="font-size:15px; margin-bottom:8px;"><strong>Rotta del crash:</strong> <code style="background:#f8f9fa; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-family:monospace;">%s</code></p>
-				<p style="font-size:15px; margin-bottom:20px;"><strong>Messaggio di eccezione:</strong> <span style="color:#c9302c; font-weight:bold;">%s</span></p>
-				
-				<h3 style="font-size:16px; color:#555; margin-bottom:10px; border-top:1px solid #eee; pt-15px;">Dettaglio Stack Trace Tecnico:</h3>
-				<pre style="background:#212529; color:#4af626; padding:15px; border-radius:4px; font-family:monospace; font-size:12px; line-height:1.5; overflow:auto; max-height:400px;">%s</pre>
-			</div>
-		`, project, path, pulitoErrText, pulitoTrace)
-
-		payload := utils.MailerPayload{
-			Subject: subject,
-			Html:    emailBody,
+		mailTemplatePath := "html/templates/alert-mail.html"
+		tmpltMail, err := template.ParseFiles(mailTemplatePath)
+		if err != nil {
+			log.Printf("[MAILER ERRORE]: Impossibile trovare il template email %s: %v", mailTemplatePath, err)
+			return
 		}
 
-		// Esegue l'invio asincrono effettivo su Gmail
+		mailData := MailAlertContext{
+			ProjectName:  project,
+			Path:         path,
+			ErrorMessage: errText,
+			StackTrace:   trace,
+		}
+
+		var mailBuffer bytes.Buffer
+		if err := tmpltMail.Execute(&mailBuffer, mailData); err != nil {
+			log.Printf("[MAILER ERRORE]: Errore compilazione template email: %v", err)
+			return
+		}
+
+		payload := utils.MailerPayload{
+			Subject: fmt.Sprintf("[%s] [CRITICAL 500] Eccezione sulla rotta %s", project, path),
+			Html:    mailBuffer.String(),
+		}
+
 		if mailErr := utils.InviaEmail(payload); mailErr != nil {
 			log.Printf("[MANUTENZIONE ERRORE]: Invio notifica mail fallito: %v", mailErr)
 		} else {
