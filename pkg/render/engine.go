@@ -159,17 +159,27 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 
 	// VITALIZZAZIONE: Invio asincrono REALE in background della mail d'allerta al developer
 	go func(errText string, trace string, path string) {
+		// Pulizia di sicurezza: isoliamo i testi per evitare che si tirino dietro script o stili della pagina
+		pulitoErrText := template.HTMLEscapeString(errText)
+
+		// Per lo Stack Trace, sostituiamo i ritorni a capo con tag <br> per renderlo leggibile nella mail
+		// ma lo manteniamo isolato dentro un blocco di testo puro
+		pulitoTrace := template.HTMLEscapeString(trace)
+
 		subject := fmt.Sprintf("[%s] [CRITICAL 500] Eccezione sulla rotta %s", project, path)
+
+		// Confezioniamo un HTML super leggero, privo di script, css o stili Bootstrap esterni
 		emailBody := fmt.Sprintf(`
-			<div style="font-family:sans-serif; padding:20px; color:#333;">
-				<h2 style="color:#d9534f; border-bottom:2px solid #d9534f; padding-bottom:10px;">Errore critico rilevato in Produzione (VPS)</h2>
-				<p><strong>Progetto di riferimento:</strong> %s</p>
-				<p><strong>Rotta che ha generato il crash:</strong> <code style="background:#f1f1f1; padding:2px 6px; border-radius:4px;">%s</code></p>
-				<p><strong>Messaggio d'errore:</strong> <span style="color:#c9302c; font-weight:bold;">%s</span></p>
-				<h3 style="margin-top:30px;">Stack Trace Completo:</h3>
-				<pre style="background:#f8f9fa; padding:15px; border:1px solid #dee2e6; font-family:monospace; font-size:13px; line-height:1.4; overflow:auto; max-height:500px; color:#555;">%s</pre>
+			<div style="font-family:sans-serif; padding:20px; color:#333; max-width:800px; margin:0 auto; background:#fff; border:1px solid #eee; border-radius:5px;">
+				<h2 style="color:#d9534f; border-bottom:2px solid #d9534f; padding-bottom:10px; margin-top:0;">⚠️ Allerta Errore Critico 500 (VPS)</h2>
+				<p style="font-size:15px; margin-bottom:8px;"><strong>Progetto applicativo:</strong> %s</p>
+				<p style="font-size:15px; margin-bottom:8px;"><strong>Rotta del crash:</strong> <code style="background:#f8f9fa; padding:4px 8px; border-radius:4px; border:1px solid #ddd; font-family:monospace;">%s</code></p>
+				<p style="font-size:15px; margin-bottom:20px;"><strong>Messaggio di eccezione:</strong> <span style="color:#c9302c; font-weight:bold;">%s</span></p>
+				
+				<h3 style="font-size:16px; color:#555; margin-bottom:10px; border-top:1px solid #eee; pt-15px;">Dettaglio Stack Trace Tecnico:</h3>
+				<pre style="background:#212529; color:#4af626; padding:15px; border-radius:4px; font-family:monospace; font-size:12px; line-height:1.5; overflow:auto; max-height:400px;">%s</pre>
 			</div>
-		`, project, path, errText, trace)
+		`, project, path, pulitoErrText, pulitoTrace)
 
 		payload := utils.MailerPayload{
 			Subject: subject,
