@@ -1,0 +1,20 @@
+{{define "body"}}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm bg-white p-4">
+            <h3 class="card-title text-center text-danger mb-4">Inizializzazione Sistema</h3>
+            <p class="text-muted small text-center mb-4">Inserire la password di sblocco presente nel file di configurazione per generare l'infrastruttura dati.</p>
+            
+            <form action="/creausers" method="POST">
+                <div class="mb-4">
+                    <label for="password" class="form-label text-muted small fw-bold">Password di Bootstrap</label>
+                    <!-- Inserito attributo autofocus per usabilità professionale -->
+                    <input type="password" class="form-control bg-white" id="password" name="password" required autofocus>
+                </div>
+                
+                <button type="submit" class="btn btn-danger w-100 fw-bold py-2">ATTIVA DATABASE & ADMIN</button>
+            </form>
+        </div>
+    </div>
+</div>
+{{end}}

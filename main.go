@@ -53,8 +53,12 @@ func main() {
 		port = "8080"
 	}
 
-	// 5. Pacchetto middleware: avvolge tutto lo scheletro nello scudo protettivo
-	handlerProtetto := middleware.RecoveryMiddleware(mux)
+	// 5. ATTIVAZIONE DELLA CATENA DEI MIDDLEWARE (Modificato)
+	// Passo A: Avvolgiamo il mux dentro la SentinellaInerte per intercettare i cookie e marcare il contesto
+	catenaConSentinella := middleware.SentinellaInerte(mux)
+
+	// Passo B: Avvolgiamo l'intera catena dentro lo scudo protettivo del Recovery per catturare i panic
+	handlerProtetto := middleware.RecoveryMiddleware(catenaConSentinella)
 
 	fmt.Printf("[START] Operativo sulla porta %s...\n", port)
 

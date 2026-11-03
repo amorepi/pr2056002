@@ -44,11 +44,16 @@ type DashboardContext struct {
 	Databases   []ToolButton
 }
 
+// Questa variabile mantiene in memoria la connessione aperta al boot
 var db *sql.DB // Conserva l'istanza della connessione a PostgreSQL
 
 // SetDatabase riceve la connessione attiva dal main.go
 func SetDatabase(database *sql.DB) {
 	db = database
+}
+
+func GetDatabase() *sql.DB {
+	return db
 }
 
 // Helper nativo per leggere la RAM su Linux (VPS) senza comandi esterni

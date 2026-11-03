@@ -23,3 +23,74 @@ created by net/http.(*Server).Serve in goroutine 1
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
 
 --------------------------------------
+2026/11/02 15:25:09 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 15:25:10 auth.go:55: [SENTINELLA] GET /favicon.ico -> Ruolo: anonimo | Auth: false
+2026/11/02 15:26:06 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/02 15:27:32 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/02 15:27:32 tools.go:125: [DB ERRORE]: Impossibile estrarre il record dell'amministratore: pq: column "username" does not exist at column 12 (42703)
+2026/11/02 15:28:44 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/02 15:33:02 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 15:52:29 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 15:52:36 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/02 15:52:51 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 15:52:54 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/02 15:53:07 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/02 16:26:45 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 16:27:03 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/02 16:33:39 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 16:43:50 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 16:44:09 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/02 16:45:25 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 16:47:03 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 16:47:04 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 16:47:09 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 16:47:40 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 16:49:15 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 16:49:27 auth.go:55: [SENTINELLA] GET /signup -> Ruolo: anonimo | Auth: false
+2026/11/02 23:34:32 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 23:34:56 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/02 23:34:56 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 23:40:27 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 23:40:47 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/02 23:41:58 auth.go:55: [SENTINELLA] POST /creausers -> Ruolo: anonimo | Auth: false
+2026/11/02 23:41:59 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/02 23:42:40 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false
+2026/11/02 23:45:01 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 23:45:19 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/02 23:45:19 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/02 23:46:47 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/02 23:46:50 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/02 23:46:50 tools.go:125: [DB ERRORE]: Impossibile estrarre il record dell'amministratore: pq: column "role" does not exist at column 29 (42703)
+2026/11/03 00:11:48 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 00:12:00 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/03 00:12:00 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 00:24:24 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/03 00:24:24 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 00:33:31 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 00:33:44 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/03 00:33:44 bootstrap_handler.go:30: [BOOTSTRAP] Accesso negato: la tabella 'users' esiste già nel database.
+2026/11/03 00:33:44 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 00:42:16 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/03 00:42:18 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/03 00:42:18 tools.go:125: [DB ERRORE]: Impossibile estrarre il record dell'amministratore: pq: column "role" does not exist at column 29 (42703)
+2026/11/03 00:46:53 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/03 00:47:08 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/03 00:47:08 tools.go:125: [DB ERRORE]: Impossibile estrarre il record dell'amministratore: pq: column "role" does not exist at column 29 (42703)
+2026/11/03 01:09:54 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/03 01:09:58 auth.go:55: [SENTINELLA] GET /Structure -> Ruolo: anonimo | Auth: false
+2026/11/03 01:22:58 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 01:23:01 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/03 01:23:03 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/03 01:24:46 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/03 01:24:47 tools.go:128: [DASHBOARD NOTA]: Tabella utenti non presente o in attesa di inizializzazione: pq: relation "users" does not exist at column 70 (42P01)
+2026/11/03 01:25:15 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 01:25:32 auth.go:55: [SENTINELLA] GET /creausers -> Ruolo: anonimo | Auth: false
+2026/11/03 01:25:53 auth.go:55: [SENTINELLA] POST /creausers -> Ruolo: anonimo | Auth: false
+2026/11/03 01:25:53 bootstrap_handler.go:133: [BOOTSTRAP] Inizializzazione completata con successo. Tabella creata ed utente 'amorepi' inserito.
+2026/11/03 01:25:53 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/03 01:25:59 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 01:26:01 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: anonimo | Auth: false
+2026/11/03 01:26:04 auth.go:55: [SENTINELLA] GET /allUsers -> Ruolo: anonimo | Auth: false
+2026/11/03 01:27:06 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/03 01:28:00 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/03 01:28:34 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false

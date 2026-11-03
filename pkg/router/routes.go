@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"pr2056002/pkg/dashboard"
+	"pr2056002/pkg/handlers" // Importiamo il pacchetto degli handler di autenticazione e bootstrap
 	"pr2056002/pkg/render"
 )
 
@@ -15,6 +16,34 @@ func RegisterRoutes(mux *http.ServeMux) {
 
 	// 2. Handler unico centralizzato (Controllo di precedenza file statici espliciti e smistamento)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+		// ==========================================
+		// ROTTA DI INIZIALIZZAZIONE AUTO-DISTRUTTIVA
+		// ==========================================
+		if r.URL.Path == "/creausers" {
+			handlers.BootstrapDBHandler(w, r)
+			return
+		}
+
+		// ==========================================
+		// ROTTE DINAMICHE DI AUTENTICAZIONE STANDARD
+		// ==========================================
+		if r.URL.Path == "/login" {
+			handlers.LoginHandler(w, r)
+			return
+		}
+
+		if r.URL.Path == "/signup" {
+			handlers.SignupHandler(w, r)
+			return
+		}
+
+		if r.URL.Path == "/logout" {
+			handlers.LogoutHandler(w, r)
+			return
+		}
+		// ==========================================
+
 		// GESTIONE FILE STATICI ESPLICITI (es. /index.html)
 		if r.URL.Path != "/" && r.URL.Path != "/dashboard" && r.URL.Path != "/Structure" && r.URL.Path != "/view-todo" && r.URL.Path != "/view-tags" {
 			targetFile := "html" + r.URL.Path
@@ -30,7 +59,7 @@ func RegisterRoutes(mux *http.ServeMux) {
 			}
 		}
 
-		// ROTTA DINAMICA DELLA RADICE (/) -> Home Page
+		// ROTTA DINAMICA DELLA RADICE (/) -> Home Page Pubblica
 		if r.URL.Path == "/" {
 			render.RenderTemplate(w, r, "home.html", http.StatusOK)
 			return
@@ -80,7 +109,6 @@ func RegisterRoutes(mux *http.ServeMux) {
 
 		// SIMULAZIONE ERRORE 500
 		if r.URL.Path == "/test-error-500" {
-			// Creiamo un errore finto intenzionale per innescare HandleTemplateError
 			errFake := fmt.Errorf("TEST ECCEZIONE 500 - Verifica allerta Mailer e pagina di cortesia")
 			render.HandleTemplateError(w, r, errFake)
 			return

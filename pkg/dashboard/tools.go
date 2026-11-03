@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"pr2056002/pkg/render"
 )
@@ -93,12 +94,15 @@ func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, tit
 	eseguiTemplateProtetto(w, r, "html/templates/markdown.html", context)
 }
 
-// UserRow definisce lo schema per i record estratti dal catalogo SQL
+// UserRow definisce lo schema reale per i record estratti dal catalogo SQL aggiornato
 type UserRow struct {
-	ID       int
-	Username string
-	Email    string
-	Role     string
+	ID        int
+	Username  string
+	Email     string
+	Cellulare string
+	Role      string
+	Attivo    string // Usiamo stringa ("Attivo"/"Disabilitato") per facilitare il rendering in users.html
+	CreatoIl  string
 }
 
 // UsersContext raccoglie l'anagrafica degli utenti estratti da PostgreSQL 17
@@ -115,19 +119,46 @@ type UsersContext struct {
 func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var utentiReali []UserRow
 
-	query := "SELECT id, username, email, role FROM users WHERE id = 1 LIMIT 1"
-	row := db.QueryRow(query)
-
-	var user UserRow
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Role)
+	// Query strutturata sui nuovi campi reali della tabella utenti
+	query := "SELECT id, username, email, cellulare, ruolo, attivo, creato_il FROM users ORDER BY id ASC"
+	rows, err := db.Query(query)
 
 	if err != nil {
-		log.Printf("[DB ERRORE]: Impossibile estrarre il record dell'amministratore: %v", err)
+		// Se la tabella non esiste (sistema non ancora inizializzato con /creausers), intercettiamo l'avviso
+		log.Printf("[DASHBOARD NOTA]: Tabella utenti non presente o in attesa di inizializzazione: %v", err)
 		utentiReali = []UserRow{
-			{ID: 0, Username: "Nessun record ID 1", Email: "Database vuoto o in attesa di migrazione", Role: "N/D"},
+			{
+				ID:        0,
+				Username:  "In attesa di attivazione",
+				Email:     "Tabella non inizializzata nel DB",
+				Cellulare: "N/D",
+				Role:      "guest",
+				Attivo:    "Disabilitato",
+				CreatoIl:  time.Now().Format("02/01/2006 15:04"),
+			},
 		}
 	} else {
-		utentiReali = append(utentiReali, user)
+		defer rows.Close()
+		for rows.Next() {
+			var u UserRow
+			var attivoBool bool
+			var creatoIlTime time.Time
+
+			err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.Cellulare, &u.Role, &attivoBool, &creatoIlTime)
+			if err != nil {
+				log.Printf("[DB ERRORE]: Scansione record fallita: %v", err)
+				continue
+			}
+
+			// Trasformiamo i tipi complessi in stringhe pulite per il template esistente
+			u.CreatoIl = creatoIlTime.Format("02/01/2006 15:04")
+			u.Attivo = "Disabilitato"
+			if attivoBool {
+				u.Attivo = "Attivo"
+			}
+
+			utentiReali = append(utentiReali, u)
+		}
 	}
 
 	context := UsersContext{
@@ -171,11 +202,9 @@ func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := os.ReadFile(logPath)
 	if err != nil {
-		// UNIFORMATO: Messaggio di avviso aggiornato
 		righeInvertite = append(righeInvertite, "[AVVISO]: Il file development.log non è ancora stato generato o è inaccessibile.")
 	} else {
 		linee := strings.Split(strings.TrimSpace(string(data)), "\n")
-		// Ciclo di inversione: leggiamo l'array partendo dall'ultimo elemento (il più recente) verso il primo
 		for i := len(linee) - 1; i >= 0; i-- {
 			if linee[i] != "" {
 				righeInvertite = append(righeInvertite, linee[i])
@@ -183,7 +212,6 @@ func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Uniamo le ultime 50 righe invertite con un ritorno a capo per il box pre
 	limite := 50
 	if len(righeInvertite) < limite {
 		limite = len(righeInvertite)
@@ -196,7 +224,7 @@ func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
 		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
-		TreeOutput:  outputFinale, // Sfruttiamo lo scheletro scuro di structure.html per il terminale
+		TreeOutput:  outputFinale,
 	}
 
 	eseguiTemplateProtetto(w, r, "html/templates/structure.html", context)

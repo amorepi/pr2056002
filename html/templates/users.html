@@ -1,45 +1,39 @@
 {{define "body"}}
-<div class="row justify-content-center">
-  <div class="col-12 col-lg-10">
-    <div class="mb-4 pb-2 border-bottom">
-      <h1 class="h2 fw-bold text-dark m-0">Anagrafica Utenti</h1>
-      <p class="text-muted small m-0 mt-1">Record estratto dal Database PostgreSQL 17</p>
-    </div>
-    <div class="card border shadow-sm p-0 bg-white overflow-hidden">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
-            <tr>
-              <th class="ps-3" style="width: 80px;">ID</th>
-              <th>Nome Utente</th>
-              <th>Email</th>
-              <th>Ruolo</th>
-              <th class="text-end pe-3" style="width: 150px;">Stato</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{range .Users}}
-            <tr>
-              <td class="ps-3 font-monospace small text-secondary">#{{.ID}}</td>
-              <td class="fw-medium text-dark">{{.Username}}</td>
-              <td class="text-secondary">{{.Email}}</td>
-              <td><span class="badge text-bg-light border px-2 py-1">{{.Role}}</span></td>
-              <td class="text-end pe-3">
-                <span class="badge text-bg-success-subtle text-success-emphasis rounded-pill px-2">Attivo</span>
-              </td>
-            </tr>
+<div class="card shadow-sm bg-white p-4">
+  <h3 class="card-title mb-4">Registro Operatori di Sistema</h3>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Cellulare</th>
+          <th>Ruolo</th>
+          <th>Stato</th>
+          <th>Data Creazione</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Users}}
+        <tr>
+          <td>{{.ID}}</td>
+          <td class="fw-bold">{{.Username}}</td>
+          <td>{{.Email}}</td>
+          <td><code>{{.Cellulare}}</code></td>
+          <td><span class="badge bg-secondary">{{.Role}}</span></td>
+          <td>
+            {{if eq .Attivo "Attivo"}}
+              <span class="badge bg-success">Attivo</span>
             {{else}}
-            <tr>
-              <td colspan="5" class="text-center py-4 text-muted italic">
-                Nessun utente censito nel database.
-              </td>
-            </tr>
+              <span class="badge bg-danger">Disabilitato</span>
             {{end}}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
+          </td>
+          <td class="small text-muted">{{.CreatoIl}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
   </div>
 </div>
 {{end}}
