@@ -1,3 +1,5 @@
+## v1.1.27 - 04/11/2026_21:25: Modifica Password
+
 ## v1.1.26 - 04/11/2026_16:00: Fix
 
 ## v1.1.25 - 03/11/2026_01:43: Inizializzazione users con il record 1

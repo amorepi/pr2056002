@@ -1,0 +1,161 @@
+2026/11/04 17:08:59 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 19:10:57 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 19:12:23 auth.go:55: [SENTINELLA] GET /logout -> Ruolo: admin | Auth: true
+2026/11/04 19:12:23 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:14:57 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:18:27 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:22:37 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:24:30 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:26:16 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:26:21 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:38:17 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 19:38:28 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/04 19:40:31 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false
+2026/11/04 19:40:31 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: admin | Auth: true
+2026/11/04 19:40:31 engine.go:82: [ECCEZIONE 500] sulla rotta /dashboard -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type dashboard.DashboardContext
+--- STACK TRACE SEPARATO ---
+goroutine 7 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1053f66f0, 0x3dd7b5226000}, 0x3dd7b5206140, {0x1053f4c40, 0x3dd7b5210480})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/dashboard.RenderDashboard({0x1053f66f0, 0x3dd7b5226000}, 0x3dd7b5206140)
+	/Users/piero/Projects/pr2056002/pkg/dashboard/dashboard.go:220 +0x57c
+pr2056002/pkg/router.RegisterRoutes.func1({0x1053f66f0, 0x3dd7b5226000}, 0x3dd7b5206140)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:96 +0x95c
+net/http.HandlerFunc.ServeHTTP(0x3dd7b518e180?, {0x1053f66f0?, 0x3dd7b5226000?}, 0x1053d52d0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x3dd7b5206000?, {0x1053f66f0, 0x3dd7b5226000}, 0x3dd7b5206140)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x1053f66f0, 0x3dd7b5226000}, 0x3dd7b5206000)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x3dd7b51efa58?, {0x1053f66f0?, 0x3dd7b5226000?}, 0x104e04700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1053f66f0?, 0x3dd7b5226000?}, 0x3dd7b51efaf8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x1053e4f38?, {0x1053f66f0?, 0x3dd7b5226000?}, 0x3dd7b51efae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x3dd7b5094600?}, {0x1053f66f0?, 0x3dd7b5226000?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x3dd7b51b62d0, {0x1053f6fc0, 0x3dd7b50d9bf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
+2026/11/04 19:40:39 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 20:56:07 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 20:56:17 auth.go:55: [SENTINELLA] GET /logout -> Ruolo: admin | Auth: true
+2026/11/04 20:56:17 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 20:56:31 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/04 20:57:26 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false
+2026/11/04 20:57:26 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: admin | Auth: true
+2026/11/04 20:57:26 engine.go:82: [ECCEZIONE 500] sulla rotta /dashboard -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type dashboard.DashboardContext
+--- STACK TRACE SEPARATO ---
+goroutine 20 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1053f66f0, 0x3dd7b51dc870}, 0x3dd7b5055cc0, {0x1053f4c40, 0x3dd7b5210fe0})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/dashboard.RenderDashboard({0x1053f66f0, 0x3dd7b51dc870}, 0x3dd7b5055cc0)
+	/Users/piero/Projects/pr2056002/pkg/dashboard/dashboard.go:220 +0x57c
+pr2056002/pkg/router.RegisterRoutes.func1({0x1053f66f0, 0x3dd7b51dc870}, 0x3dd7b5055cc0)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:96 +0x95c
+net/http.HandlerFunc.ServeHTTP(0x3dd7b518e180?, {0x1053f66f0?, 0x3dd7b51dc870?}, 0x1053d52d0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x3dd7b5055b80?, {0x1053f66f0, 0x3dd7b51dc870}, 0x3dd7b5055cc0)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x1053f66f0, 0x3dd7b51dc870}, 0x3dd7b5055b80)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x3dd7b51eba58?, {0x1053f66f0?, 0x3dd7b51dc870?}, 0x104e04700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1053f66f0?, 0x3dd7b51dc870?}, 0x3dd7b51ebaf8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x1053e4f38?, {0x1053f66f0?, 0x3dd7b51dc870?}, 0x3dd7b51ebae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x3dd7b522b040?}, {0x1053f66f0?, 0x3dd7b51dc870?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x3dd7b5126120, {0x1053f6fc0, 0x3dd7b50d9bf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
+2026/11/04 20:58:19 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 20:58:26 auth.go:55: [SENTINELLA] GET /logout -> Ruolo: admin | Auth: true
+2026/11/04 20:58:26 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 20:58:39 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/04 20:59:14 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false
+2026/11/04 20:59:14 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 20:59:27 auth.go:55: [SENTINELLA] GET /logout -> Ruolo: admin | Auth: true
+2026/11/04 20:59:27 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/04 20:59:39 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/04 21:00:09 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false
+2026/11/04 21:00:09 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 21:01:08 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: admin | Auth: true
+2026/11/04 21:01:08 engine.go:82: [ECCEZIONE 500] sulla rotta /dashboard -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type dashboard.DashboardContext
+--- STACK TRACE SEPARATO ---
+goroutine 21 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x10583a6f0, 0x1819788c8960}, 0x18197882d7c0, {0x105838c40, 0x1819788ae840})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/dashboard.RenderDashboard({0x10583a6f0, 0x1819788c8960}, 0x18197882d7c0)
+	/Users/piero/Projects/pr2056002/pkg/dashboard/dashboard.go:220 +0x57c
+pr2056002/pkg/router.RegisterRoutes.func1({0x10583a6f0, 0x1819788c8960}, 0x18197882d7c0)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:96 +0x95c
+net/http.HandlerFunc.ServeHTTP(0x18197895a180?, {0x10583a6f0?, 0x1819788c8960?}, 0x1058192d0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x18197882d680?, {0x10583a6f0, 0x1819788c8960}, 0x18197882d7c0)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x10583a6f0, 0x1819788c8960}, 0x18197882d680)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x1819789c1a58?, {0x10583a6f0?, 0x1819788c8960?}, 0x105248700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x10583a6f0?, 0x1819788c8960?}, 0x1819789c1af8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x105828f38?, {0x10583a6f0?, 0x1819788c8960?}, 0x1819789c1ae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x1819789125c0?}, {0x10583a6f0?, 0x1819788c8960?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x1819789882d0, {0x10583afc0, 0x181978917bf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
+2026/11/04 21:19:21 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/04 21:19:31 auth.go:55: [SENTINELLA] GET /setpassw -> Ruolo: admin | Auth: true
+2026/11/04 21:19:31 engine.go:82: [ECCEZIONE 500] sulla rotta /setpassw -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type render.PageContext
+--- STACK TRACE SEPARATO ---
+goroutine 21 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1054226f0, 0x6996e43304b0}, 0x6996e42ff040, {0x105420c40, 0x6996e4298f20})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/render.RenderTemplate({0x1054226f0, 0x6996e43304b0}, 0x6996e42ff040, {0x104f799f0, 0x8}, 0x194)
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:57 +0x29c
+pr2056002/pkg/render.Error404Handler({0x1054226f0?, 0x6996e43304b0?}, 0x6996e43417d8?)
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:73 +0x138
+pr2056002/pkg/router.RegisterRoutes.func1({0x1054226f0, 0x6996e43304b0}, 0x6996e42ff040)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:150 +0xcb8
+net/http.HandlerFunc.ServeHTTP(0x6996e42da180?, {0x1054226f0?, 0x6996e43304b0?}, 0x1054012d0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x6996e42fef00?, {0x1054226f0, 0x6996e43304b0}, 0x6996e42ff040)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x1054226f0, 0x6996e43304b0}, 0x6996e42fef00)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x6996e4341a58?, {0x1054226f0?, 0x6996e43304b0?}, 0x104e30700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1054226f0?, 0x6996e43304b0?}, 0x6996e4341af8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x105410f38?, {0x1054226f0?, 0x6996e43304b0?}, 0x6996e4341ae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x6996e42925c0?}, {0x1054226f0?, 0x6996e43304b0?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x6996e43082d0, {0x105422fc0, 0x6996e4297bf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
