@@ -39,6 +39,8 @@ func BootstrapDBHandler(w http.ResponseWriter, r *http.Request) {
 			"Version":     render.CurrentVersion,
 			"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
 			"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
+			"UserName":    "Ospite",
+			"Autenticato": false, // Cambia in true se il cookie di sessione è valido
 		}
 
 		tmpl, err := template.ParseFiles("html/templates/layout.html", "html/templates/bootstrap.html")

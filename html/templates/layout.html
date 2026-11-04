@@ -4,45 +4,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Progetto {{.ProjectName}}</title>
+  <title>{{.ProjectName}} - {{.Version}}</title>
+  <!-- Bootstrap 5 CSS Standard da CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
 <body class="bg-light">
-  
-  <!-- HEADER FIXED TOP A TRE COLONNE (Stile React Header Component) -->
-  <header class="navbar fixed-top bg-white border-bottom shadow-sm py-2">
-    <div class="container-fluid d-flex align-items-center justify-content-between">
+  <!-- Header Fisso Standard Condiviso -->
+  <nav class="navbar navbar-expand-lg bg-white  border-bottom shadow-sm py-2 sticky-top">
+    <div class="container-fluid">
+      <a href="/" class="navbar-brand m-0 p-0">
+        <img src="{{.LogoUrl}}" alt="Logo" class="d-inline-block align-text-top" style="height: 40px;">
+      </a>
       
-      <!-- Colonna Sinistra: Logo e Navigazione -->
-      <div class="d-flex align-items-center gap-3">
-        <a href="/" class="navbar-brand m-0 p-0">
-          <img src="{{.LogoUrl}}" alt="Logo" class="d-inline-block align-text-top" style="height: 36px;">
-        </a>
-        <a href="/" class="nav-link text-dark fw-medium">Home</a>
-        <a href="/dashboard" class="nav-link text-dark fw-medium">Dashboard</a>
-      </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenuto">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-      <!-- Colonna Centrale: Versione ereditata centralmente -->
-      <div class="text-center">
-        <span class="badge text-bg-secondary font-monospace px-2 py-1">{{.Version}}</span>
-      </div>
-      
-      <!-- Colonna Destra: Stato Amministratore -->
-      <div class="d-flex align-items-center gap-3">
-        <div class="position-relative" title="{{.UserName}}" style="width: 36px; height: 36px;">
-          <img src="{{.AvatarUrl}}" alt="User Avatar" class="img-fluid rounded-circle border w-100 h-100 object-fit-cover">
-        </div>
-        <a href="/logout" class="btn btn-outline-danger btn-sm px-3">Esci</a>
-      </div>
+      <div class="collapse navbar-collapse" id="navbarContenuto">
 
+        <!-- Menu di Sinistra: Controllato dallo stato di Autenticazione dell'utente -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          {{if .Autenticato}}
+            <li class="nav-item">
+              <a class="nav-link fw-bold" href="/dashboard">Dashboard</a>
+            </li>
+          {{end}}
+        </ul>
+
+        <!-- Menu di Destra: Dropdown unificato associato alla foto dell'utente/Avatar -->
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdownUtente" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <!-- La foto o l'avatar dell'operatore -->
+              <img src="{{.AvatarUrl}}" alt="Avatar" class="rounded-circle bg-white" style="width: 32px; height: 32px; object-fit: cover;">
+              {{if .Autenticato}}
+                <span class="ms-2 text-black small d-none d-sm-inline">{{.UserName}}</span>
+              {{else}}
+                <span class="ms-2 text-muted small d-none d-sm-inline">Anonimo</span>
+              {{end}}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdownUtente">
+              {{if .Autenticato}}
+                <li><a class="dropdown-menu-item dropdown-item fw-bold text-primary" href="/profilo">Profilo Utente</a></li>
+                <li><hr class="dropdown-divider"></li>
+              {{end}}
+              <li><a class="dropdown-menu-item dropdown-item" href="/login">Login</a></li>
+              <li><a class="dropdown-menu-item dropdown-item" href="/signup">Signup</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-menu-item dropdown-item text-danger" href="/logout">Esci</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
-  </header>
+  </nav>
 
-  <!-- CORPO CENTRALE DINAMICO INIETTATO DA GO (Il corpo del template) -->
-  <main class="container-fluid pt-5 mt-5">
+  <!-- Innesto Dinamico del Corpo della Pagina -->
+  <div class="container py-5">
     {{template "body" .}}
-  </main>
+  </div>
 
+  <!-- Bootstrap 5 JS Bundle da CDN (Necessario per il corretto funzionamento del Dropdown) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -1,3 +1,5 @@
+## v1.1.26 - 04/11/2026_16:00: Fix
+
 ## v1.1.25 - 03/11/2026_01:43: Inizializzazione users con il record 1
 
 ## v1.1.24 - 02/11/2026_00:40: Chiuso la Gestione della dashboard

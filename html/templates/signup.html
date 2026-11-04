@@ -1,32 +1,54 @@
 {{define "body"}}
 <div class="row justify-content-center mt-5">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm bg-white p-4">
-            <h3 class="card-title text-center mb-4">Nuova Registrazione</h3>
-            
-            <form action="/signup" method="POST">
-                <div class="mb-3">
-                    <label for="username" class="form-label text-muted small fw-bold">Username</label>
-                    <input type="text" class="form-control bg-white" id="username" name="username" required autocomplete="off">
-                </div>
-
-                <div class="mb-3">
-                    <label for="email" class="form-label text-muted small fw-bold">Indirizzo Email</label>
-                    <input type="email" class="form-control bg-white" id="email" name="email" required autocomplete="off">
-                </div>
-                
-                <div class="mb-4">
-                    <label for="password" class="form-label text-muted small fw-bold">Password</label>
-                    <input type="password" class="form-control bg-white" id="password" name="password" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary w-100 fw-bold py-2">INVIA REGISTRAZIONE</button>
-            </form>
-            
-            <div class="mt-4 text-center small text-muted">
-                Hai già un account? <a href="/login" class="text-primary text-decoration-none">Torna al Login</a>
-            </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="card shadow-sm bg-white p-4">
+      <h3 class="card-title text-center mb-4">Nuova Registrazione</h3>
+      
+      <form action="/signup" method="POST">
+        <div class="mb-3">
+          <label for="username" class="form-label text-muted small fw-bold">Username</label>
+          <input type="text" class="form-control bg-white" id="username" name="username" required autocomplete="off">
         </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label text-muted small fw-bold">Indirizzo Email</label>
+          <input type="email" class="form-control bg-white" id="email" name="email" required autocomplete="off">
+        </div>
+
+        <div class="mb-3">
+          <label for="cellulare" class="form-label text-muted small fw-bold">Numero Cellulare</label>
+          <input type="text" class="form-control bg-white" id="cellulare" name="cellulare" placeholder="+393331234567" required autocomplete="off">
+        </div>
+        
+        <div class="mb-4">
+          <label for="password" class="form-label text-muted small fw-bold">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control bg-white" id="password" name="password" minlength="8" required>
+            <button class="btn btn-outline-secondary font-monospace" type="button" id="btnTogglePassword">Mostra</button>
+          </div>
+          <div class="form-text text-muted small mt-1">La password deve contenere almeno 8 caratteri.</div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">INVIA REGISTRAZIONE</button>
+      </form>
+      
+      <div class="mt-4 text-center small text-muted">
+        Hai già un account? <a href="/login" class="text-primary text-decoration-none">Torna al Login</a>
+      </div>
     </div>
+  </div>
 </div>
+
+<script>
+  document.getElementById('btnTogglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      this.textContent = 'Nascondi';
+    } else {
+      passwordInput.type = 'password';
+      this.textContent = 'Mostra';
+    }
+  });
+</script>
 {{end}}

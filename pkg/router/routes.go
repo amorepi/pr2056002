@@ -2,11 +2,14 @@ package router
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"pr2056002/pkg/dashboard"
 	"pr2056002/pkg/handlers" // Importiamo il pacchetto degli handler di autenticazione e bootstrap
+	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
+	"text/template"
 )
 
 // RegisterRoutes unifica e scandisce tutte le rotte del sistema in un unico punto esposto
@@ -61,7 +64,30 @@ func RegisterRoutes(mux *http.ServeMux) {
 
 		// ROTTA DINAMICA DELLA RADICE (/) -> Home Page Pubblica
 		if r.URL.Path == "/" {
-			render.RenderTemplate(w, r, "home.html", http.StatusOK)
+			sessione, _ := r.Context().Value(middleware.UserContextKey).(middleware.UserSession)
+
+			data := map[string]interface{}{
+				"ProjectName": "PR2056002",
+				"Version":     render.CurrentVersion,
+				"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
+				"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
+				"UserName":    sessione.Username,
+				"Autenticato": sessione.Autenticato,
+			}
+
+			// Utilizziamo un approccio atomico per assicurarci che entrambi i file si fondano nello stesso albero
+			tmpl, err := template.New("layout").ParseFiles("html/templates/layout.html", "html/templates/layout-home-body.html")
+			if err != nil {
+				log.Printf("[ERRORE ROUTER] Compilazione template Home fallita: %v", err)
+				http.Error(w, "Errore interno del server", http.StatusInternalServerError)
+				return
+			}
+
+			// Esecuzione esplicita del blocco ereditato "layout"
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
+				log.Printf("[ERRORE ROUTER] Rendering Home fallito: %v", err)
+			}
 			return
 		}
 
