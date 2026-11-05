@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"pr2056002/pkg/dashboard"
+	"pr2056002/pkg/handlers"
 	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 	"pr2056002/pkg/router"
@@ -42,6 +43,7 @@ func main() {
 
 	// Passa la connessione al package dashboard
 	dashboard.SetDatabase(db)
+	handlers.SetPasswordDatabase(db)
 
 	// 3. ARCHITETTURA DEL ROUTING RIGENERATA
 	mux := http.NewServeMux()

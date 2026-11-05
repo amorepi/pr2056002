@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 	"runtime"
 	"strconv"
@@ -148,6 +149,15 @@ func BuildTree(dirPath string, prefix string) string {
 
 // RenderDashboard compila la Dashboard estraendo i dati reali della macchina
 func RenderDashboard(w http.ResponseWriter, r *http.Request) {
+	// 1. Recupero della sessione dal contesto iniettato dalla SentinellaInerte
+	sessione, _ := r.Context().Value(middleware.UserContextKey).(middleware.UserSession)
+
+	// Sicurezza: Se l'utente non è autenticato, viene rispedito in Homepage
+	if !sessione.Autenticato {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
 	project := os.Getenv("PROJECT")
 	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
 	avatarUrl := "/img/" + os.Getenv("AVATAR_PROJ")
@@ -170,13 +180,14 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		ramValore = "Rilevazione hardware fallita"
 	}
 
+	// 2. Correzione dei tipi espliciti template.HTML per evitare il blocco grafico
 	metrics := []MetricCard{
 		{Title: "Sistema operativo", Value: template.HTML(sistemaOperativo), IsFullWidth: false, IsHalfWidth: false},
 		{Title: "Motore Backend Attivo", Value: template.HTML(versioneGo + " / Native Server"), IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Server Web Nginx", Value: "Proxy Inverso Operativo", IsFullWidth: false, IsHalfWidth: false},
+		{Title: "Server Web Nginx", Value: template.HTML("Proxy Inverso Operativo"), IsFullWidth: false, IsHalfWidth: false},
 		{Title: "Memoria RAM Fisico", Value: template.HTML(ramValore), BadgeText: "Ottimale", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
 		{Title: "Archiviazione Disco (Root)", Value: template.HTML(spazioDisco), IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Motore Database", Value: "PostgreSQL 17 (Connesso)", BadgeText: "Operativo", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
+		{Title: "Motore Database", Value: template.HTML("PostgreSQL 17 (Connesso)"), BadgeText: "Operativo", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
 	}
 
 	tools := []ToolButton{
@@ -193,11 +204,12 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		{Href: "/allUsers", Label: "Tabella Utenti"},
 	}
 
+	// 3. Il nome utente viene iniettato dinamicamente (mostrerà "amorepi" o chi effettua il login)
 	data := DashboardContext{
 		ProjectName: project,
 		LogoUrl:     logoUrl,
 		AvatarUrl:   avatarUrl,
-		UserName:    "Amministratore",
+		UserName:    sessione.Username,
 		Version:     render.CurrentVersion,
 		Metrics:     metrics,
 		Tools:       tools,

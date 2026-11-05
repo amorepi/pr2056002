@@ -159,3 +159,129 @@ created by net/http.(*Server).Serve in goroutine 1
 	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
 
 --------------------------------------
+2026/11/05 00:23:24 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 00:23:35 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: admin | Auth: true
+2026/11/05 00:23:35 engine.go:82: [ECCEZIONE 500] sulla rotta /dashboard -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type dashboard.DashboardContext
+--- STACK TRACE SEPARATO ---
+goroutine 21 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1052f26b0, 0x17a3352244b0}, 0x17a3351f3040, {0x1052f0c60, 0x17a33518d140})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/dashboard.RenderDashboard({0x1052f26b0, 0x17a3352244b0}, 0x17a3351f3040)
+	/Users/piero/Projects/pr2056002/pkg/dashboard/dashboard.go:232 +0x5fc
+pr2056002/pkg/router.RegisterRoutes.func1({0x1052f26b0, 0x17a3352244b0}, 0x17a3351f3040)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:102 +0x9c8
+net/http.HandlerFunc.ServeHTTP(0x17a3351ce180?, {0x1052f26b0?, 0x17a3352244b0?}, 0x1052d1290?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x17a3351f2f00?, {0x1052f26b0, 0x17a3352244b0}, 0x17a3351f3040)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x1052f26b0, 0x17a3352244b0}, 0x17a3351f2f00)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x17a335235a58?, {0x1052f26b0?, 0x17a3352244b0?}, 0x104d00700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1052f26b0?, 0x17a3352244b0?}, 0x17a335235af8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x1052e0ef8?, {0x1052f26b0?, 0x17a3352244b0?}, 0x17a335235ae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x17a3351845c0?}, {0x1052f26b0?, 0x17a3352244b0?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x17a3351fc2d0, {0x1052f2f80, 0x17a335189bf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
+2026/11/05 00:32:53 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 00:33:14 auth.go:55: [SENTINELLA] GET /setpassw -> Ruolo: admin | Auth: true
+2026/11/05 00:33:14 engine.go:82: [ECCEZIONE 500] sulla rotta /setpassw -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type render.PageContext
+--- STACK TRACE SEPARATO ---
+goroutine 21 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1034c26b0, 0x51d9f9faa000}, 0x51d9f9f16280, {0x1034c0c60, 0x51d9f9f902a0})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/render.RenderTemplate({0x1034c26b0, 0x51d9f9faa000}, 0x51d9f9f16280, {0x10301a575, 0x8}, 0x194)
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:57 +0x29c
+pr2056002/pkg/render.Error404Handler({0x1034c26b0?, 0x51d9f9faa000?}, 0x51d9fa1417d8?)
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:73 +0x138
+pr2056002/pkg/router.RegisterRoutes.func1({0x1034c26b0, 0x51d9f9faa000}, 0x51d9f9f16280)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:156 +0xd24
+net/http.HandlerFunc.ServeHTTP(0x51d9fa0da180?, {0x1034c26b0?, 0x51d9f9faa000?}, 0x1034a1290?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x51d9f9f16140?, {0x1034c26b0, 0x51d9f9faa000}, 0x51d9f9f16280)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x1034c26b0, 0x51d9f9faa000}, 0x51d9f9f16140)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x51d9fa141a58?, {0x1034c26b0?, 0x51d9f9faa000?}, 0x102ed0700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1034c26b0?, 0x51d9f9faa000?}, 0x51d9fa141af8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x1034b0ef8?, {0x1034c26b0?, 0x51d9f9faa000?}, 0x51d9fa141ae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x51d9fa0925c0?}, {0x1034c26b0?, 0x51d9f9faa000?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x51d9fa1082d0, {0x1034c2f80, 0x51d9fa097bf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
+2026/11/05 00:33:52 auth.go:55: [SENTINELLA] GET /api/modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 00:34:11 auth.go:55: [SENTINELLA] GET /api/modifica-password-body -> Ruolo: admin | Auth: true
+2026/11/05 00:52:40 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 00:52:53 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 00:53:19 auth.go:55: [SENTINELLA] GET /login -> Ruolo: admin | Auth: true
+2026/11/05 00:55:28 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:10:41 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 01:10:49 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:11:38 auth.go:55: [SENTINELLA] GET /login -> Ruolo: admin | Auth: true
+2026/11/05 01:16:41 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 01:16:48 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:17:45 auth.go:55: [SENTINELLA] GET /dashboard -> Ruolo: admin | Auth: true
+2026/11/05 01:17:45 engine.go:82: [ECCEZIONE 500] sulla rotta /dashboard -> template: layout.html:27:15: executing "layout" at <.Autenticato>: can't evaluate field Autenticato in type dashboard.DashboardContext
+--- STACK TRACE SEPARATO ---
+goroutine 33 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x1014a26b0, 0x5431c5cc0000}, 0x5431c5ca8140, {0x1014a0c60, 0x5431c5c7c880})
+	/Users/piero/Projects/pr2056002/pkg/render/engine.go:81 +0x4c
+pr2056002/pkg/dashboard.RenderDashboard({0x1014a26b0, 0x5431c5cc0000}, 0x5431c5ca8140)
+	/Users/piero/Projects/pr2056002/pkg/dashboard/dashboard.go:232 +0x5fc
+pr2056002/pkg/router.RegisterRoutes.func1({0x1014a26b0, 0x5431c5cc0000}, 0x5431c5ca8140)
+	/Users/piero/Projects/pr2056002/pkg/router/routes.go:102 +0x9c8
+net/http.HandlerFunc.ServeHTTP(0x5431c5d56180?, {0x1014a26b0?, 0x5431c5cc0000?}, 0x101481290?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x5431c5ca8000?, {0x1014a26b0, 0x5431c5cc0000}, 0x5431c5ca8140)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x1014a26b0, 0x5431c5cc0000}, 0x5431c5ca8000)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:61 +0x2d0
+net/http.HandlerFunc.ServeHTTP(0x5431c5db9a58?, {0x1014a26b0?, 0x5431c5cc0000?}, 0x100eb0700?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x1014a26b0?, 0x5431c5cc0000?}, 0x5431c5db9af8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:32 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x101490ef8?, {0x1014a26b0?, 0x5431c5cc0000?}, 0x5431c5db9ae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x5431c5c42780?}, {0x1014a26b0?, 0x5431c5cc0000?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x5431c5ca4000, {0x1014a2f80, 0x5431c5d0fbf0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------
+2026/11/05 01:18:42 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 01:18:48 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:19:14 auth.go:55: [SENTINELLA] POST /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:20:06 auth.go:55: [SENTINELLA] POST /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:30:07 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 01:30:13 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:30:31 auth.go:55: [SENTINELLA] POST /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:30:31 modifica-password-body.go:67: [ERRORE DB] Impossibile aggiornare la password per amorepi: pq: column "password" of relation "users" does not exist at column 18 (42703)
+2026/11/05 01:38:02 auth.go:55: [SENTINELLA] GET / -> Ruolo: admin | Auth: true
+2026/11/05 01:38:07 auth.go:55: [SENTINELLA] GET /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:38:21 auth.go:55: [SENTINELLA] POST /modifica-password -> Ruolo: admin | Auth: true
+2026/11/05 01:38:21 auth.go:55: [SENTINELLA] GET /logout -> Ruolo: admin | Auth: true
+2026/11/05 01:38:21 auth.go:55: [SENTINELLA] GET / -> Ruolo: anonimo | Auth: false
+2026/11/05 01:38:38 auth.go:55: [SENTINELLA] GET /login -> Ruolo: anonimo | Auth: false
+2026/11/05 01:38:52 auth.go:55: [SENTINELLA] POST /login -> Ruolo: anonimo | Auth: false

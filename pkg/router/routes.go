@@ -45,6 +45,12 @@ func RegisterRoutes(mux *http.ServeMux) {
 			handlers.LogoutHandler(w, r)
 			return
 		}
+
+		if r.URL.Path == "/modifica-password" {
+			handlers.ModificaPasswordHandler(w, r)
+			return
+		}
+
 		// ==========================================
 
 		// GESTIONE FILE STATICI ESPLICITI (es. /index.html)
