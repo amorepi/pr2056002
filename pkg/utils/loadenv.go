@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"database/sql"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -51,4 +53,19 @@ func InizializzaAmbiente() {
 	// Il MultiWriter permette a log.Printf di stampare sia a schermo che nel file .log
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
+}
+
+// ConnettiDatabase apre la connessione e verifica se il catalogo PostgreSQL risponde
+func ConnettiDatabase(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("inizializzazione del driver fallita: %w", err)
+	}
+
+	if err = db.Ping(); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("il database non risponde o non esiste nel catalogo PostgreSQL: %w", err)
+	}
+
+	return db, nil
 }

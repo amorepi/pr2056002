@@ -31,23 +31,8 @@ func RegisterRoutes(mux *http.ServeMux) {
 		// ==========================================
 		// ROTTE DINAMICHE DI AUTENTICAZIONE STANDARD
 		// ==========================================
-		if r.URL.Path == "/login" {
-			handlers.LoginHandler(w, r)
-			return
-		}
-
 		if r.URL.Path == "/signup" {
 			handlers.SignupHandler(w, r)
-			return
-		}
-
-		if r.URL.Path == "/logout" {
-			handlers.LogoutHandler(w, r)
-			return
-		}
-
-		if r.URL.Path == "/modifica-password" {
-			handlers.ModificaPasswordHandler(w, r)
 			return
 		}
 

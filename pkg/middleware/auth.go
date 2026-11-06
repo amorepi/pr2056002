@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"log"
 	"net/http"
 )
 
@@ -51,8 +50,8 @@ func SentinellaInerte(next http.Handler) http.Handler {
 			}
 		}
 
-		// 3. DIARIO DI LOG SINTETICO (Solo una riga in console/terminale come concordato)
-		log.Printf("[SENTINELLA] %s %s -> Ruolo: %s | Auth: %t", r.Method, r.URL.Path, sessione.Ruolo, sessione.Autenticato)
+		// 3. DIARIO DI LOG SINTETICO (Solo una riga in console/terminale)
+		// log.Printf("[SENTINELLA] %s %s -> Ruolo: %s | Auth: %t", r.Method, r.URL.Path, sessione.Ruolo, sessione.Autenticato)
 
 		// 4. ARRICCHIMENTO DEL CONTESTO
 		ctx := context.WithValue(r.Context(), UserContextKey, sessione)

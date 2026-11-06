@@ -1,0 +1,44 @@
+{{define "body"}}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    <div class="p-5 bg-white border rounded shadow-sm">
+      
+      <div class="text-center mb-4">
+        <h3 class="fw-bold">Accedi</h3>
+        <p class="text-muted small">Inserisci le tue credenziali per continuare</p>
+      </div>
+
+      {{if .Errore}}
+        <div class="alert alert-danger py-2 text-center small" role="alert">
+          {{.Errore}}
+        </div>
+      {{end}}
+
+      <form action="/login" method="POST">
+        <!-- Campo Username -->
+        <div class="mb-3">
+          <label for="username" class="form-label small fw-semibold">Username o Email</label>
+          <input type="text" id="username" name="username" class="form-control" autocomplete="username" required autofocus>
+        </div>
+
+        <!-- Campo Password con pulsante Mostra/Nascondi visibile e funzionante -->
+        <div class="mb-4">
+          <label for="password" class="form-label small fw-semibold">Password</label>
+          <div class="input-group">
+            <input type="password" id="password" name="password" class="form-control" autocomplete="current-password" required>
+            <button class="btn btn-outline-secondary text-dark bg-light d-flex align-items-center justify-content-center" type="button" id="togglePassword" 
+                    onclick="const p = document.getElementById('password'); const icon = this.querySelector('i'); if (p.type === 'password') { p.type = 'text'; icon.classList.replace('bi-eye', 'bi-eye-slash'); } else { p.type = 'password'; icon.classList.replace('bi-eye-slash', 'bi-eye'); }">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pulsante di Invio -->
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary fw-medium">Accedi</button>
+        </div>
+      </form>
+
+    </div>
+</div>
+{{end}}
