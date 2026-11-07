@@ -19,6 +19,7 @@ type PageContext struct {
 	LogoUrl     string
 	AvatarUrl   string
 	UserName    string
+	Autenticato bool
 	Version     string
 }
 

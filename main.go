@@ -6,12 +6,10 @@ import (
 	"net/http"
 	"os"
 
+	"pr2056002/pkg"
 	"pr2056002/pkg/dashboard"
-	"pr2056002/pkg/loginUtente"
 	"pr2056002/pkg/middleware"
-	"pr2056002/pkg/modificaPassword"
 	"pr2056002/pkg/render"
-	"pr2056002/pkg/router"
 	"pr2056002/pkg/utils"
 
 	// Il "_" obbliga l'inclusione di questo pacchetto anche in assenza di chiamate dirette
@@ -43,7 +41,6 @@ func main() {
 
 	// Passa la connessione al package dashboard
 	dashboard.SetDatabase(db)
-	// handlers.SetPasswordDatabase(db)
 
 	// 3. ARCHITETTURA DEL ROUTING RIGENERATA
 	mux := http.NewServeMux()
@@ -51,24 +48,14 @@ func main() {
 	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-
-	// Registrazione delle rotte del vecchio router
-	router.RegisterRoutes(mux)
-
-	// REGISTRAZIONE ARCHITETTURALE DEI NUOVI MODULI (In una sola riga ciascuno!)
-	loginUtente.RegisterRoutes(mux, db)
-	modificaPassword.RegisterRoutes(mux, db)
+	// UNICO PUNTO DI REGISTRAZIONE: Passiamo sia il mux che il database al router generale
+	pkg.RegisterRoutes(mux, db)
 
 	// 4. Avvio dell'ascolto di rete legato al router attivo
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-
-	// 5. ATTIVAZIONE DELLA CATENA DEI MIDDLEWARE
-	// Integriamo il controllo password forzato prima che le richieste arrivino al mux interno
-	// (Facoltativo: puoi decidere se inserire qui EnforceSecurePasswordMiddleware)
-	// muxProtettoDaPassword := modificaPassword.EnforceSecurePasswordMiddleware(db, mux.ServeHTTP)
 
 	// Passo A: Avvolgiamo il mux dentro la SentinellaInerte per intercettare i cookie e marcare il contesto
 	catenaConSentinella := middleware.SentinellaInerte(mux)

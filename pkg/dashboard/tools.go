@@ -159,6 +159,12 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 			utentiReali = append(utentiReali, u)
 		}
+		if err = rows.Err(); err != nil {
+			log.Printf("[ERRORE DB] Errore riscontrato durante l'iterazione dei record: %v", err)
+			// Gestisci l'errore (es. ritorna l'errore o interrompi il rendering)
+			return
+		}
+		// =======================================================
 	}
 
 	context := UsersContext{

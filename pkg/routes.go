@@ -1,45 +1,69 @@
-package router
+package pkg
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"text/template"
+
 	"pr2056002/pkg/dashboard"
-	"pr2056002/pkg/handlers" // Importiamo il pacchetto degli handler di autenticazione e bootstrap
 	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
-	"text/template"
+	"pr2056002/pkg/users"
 )
 
 // RegisterRoutes unifica e scandisce tutte le rotte del sistema in un unico punto esposto
-func RegisterRoutes(mux *http.ServeMux) {
+func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 	// 1. Asset statici grafici
 	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("html/img"))))
 
-	// 2. Handler unico centralizzato (Controllo di precedenza file statici espliciti e smistamento)
+	// ==========================================
+	// REGISTRAZIONE ROTTE DEI MODULI SPECIFICI
+	// ==========================================
+
+	// Rotta di bootstrap auto-distruttiva
+	mux.HandleFunc("/creausers", dashboard.BootstrapDBHandler)
+
+	// Rotte del modulo utenti
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			users.HandlePostLogin(w, r, db)
+		} else {
+			users.HandleGetLogin(w, r)
+		}
+	})
+
+	mux.HandleFunc("/logout", users.HandleLogout)
+
+	mux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			users.HandlePostSignup(w, r, db)
+		} else {
+			users.HandleGetSignup(w, r)
+		}
+	})
+
+	// Modulo di modifica password
+	users.RegisterPasswordRoutes(mux, db)
+
+	// ==========================================
+	// HANDLER UNICO CENTRALIZZATO PER LA RADICE (/) E UTILITY
+	// ==========================================
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-		// ==========================================
-		// ROTTA DI INIZIALIZZAZIONE AUTO-DISTRUTTIVA
-		// ==========================================
-		if r.URL.Path == "/creausers" {
-			handlers.BootstrapDBHandler(w, r)
-			return
-		}
+		// GESTIONE FILE STATICI ESPLICITI (Incluso login, logout, signup e creausers)
+		if r.URL.Path != "/" &&
+			r.URL.Path != "/dashboard" &&
+			r.URL.Path != "/Structure" &&
+			r.URL.Path != "/view-todo" &&
+			r.URL.Path != "/view-tags" &&
+			r.URL.Path != "/login" &&
+			r.URL.Path != "/logout" &&
+			r.URL.Path != "/signup" &&
+			r.URL.Path != "/creausers" {
 
-		// ==========================================
-		// ROTTE DINAMICHE DI AUTENTICAZIONE STANDARD
-		// ==========================================
-		if r.URL.Path == "/signup" {
-			handlers.SignupHandler(w, r)
-			return
-		}
-
-		// ==========================================
-
-		// GESTIONE FILE STATICI ESPLICITI (es. /index.html)
-		if r.URL.Path != "/" && r.URL.Path != "/dashboard" && r.URL.Path != "/Structure" && r.URL.Path != "/view-todo" && r.URL.Path != "/view-tags" {
 			targetFile := "html" + r.URL.Path
 			if info, err := os.Stat(targetFile); err == nil && !info.IsDir() {
 				data, err := os.ReadFile(targetFile)
@@ -66,7 +90,6 @@ func RegisterRoutes(mux *http.ServeMux) {
 				"Autenticato": sessione.Autenticato,
 			}
 
-			// Utilizziamo un approccio atomico per assicurarci che entrambi i file si fondano nello stesso albero
 			tmpl, err := template.New("layout").ParseFiles("html/templates/layout.html", "html/templates/layout-home-body.html")
 			if err != nil {
 				log.Printf("[ERRORE ROUTER] Compilazione template Home fallita: %v", err)
@@ -74,7 +97,6 @@ func RegisterRoutes(mux *http.ServeMux) {
 				return
 			}
 
-			// Esecuzione esplicita del blocco ereditato "layout"
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
 				log.Printf("[ERRORE ROUTER] Rendering Home fallito: %v", err)

@@ -1,4 +1,4 @@
-package modificaPassword
+package users
 
 import (
 	"crypto/aes"
@@ -7,32 +7,20 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"errors"
-	"html/template"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
-	"time"
-
-	"pr2056002/pkg/render" // Import necessario per recuperare la versione globale
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	layoutPath   = "html/templates/layout.html" // CORRETTO: Allineato alla tua reale struttura
-	templatePath = "pkg/modificaPassword/modificaPassword-body.html"
-)
-
-const CookieSessionName = "session_token"
-
 var secretKey = []byte("chiave-segreta-di-32-caratteri!")
 
 // ==========================================
-// 1. ROTTE
+// 1. ROTTE (Rinominata per eliminare il DuplicateDecl ed essere visibile da main.go)
 // ==========================================
-func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
+func RegisterPasswordRoutes(mux *http.ServeMux, db *sql.DB) {
 	mux.HandleFunc("/modificaPassword", EnforceSecurePasswordMiddleware(db, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			handlePostPassword(w, r, db)
@@ -45,23 +33,17 @@ func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 // ==========================================
 // 2. GESTORI (Handlers)
 // ==========================================
-// Funzione di utilità interna per generare la mappa dati standard comprensiva di brand e layout
-func generaMappaDatiBase(r *http.Request) map[string]interface{} {
-	return map[string]interface{}{
-		"ProjectName": "PR2056002",
-		"Version":     render.CurrentVersion,
-		"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
-		"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
-		"IsForced":    r.URL.Query().Get("reason") == "force",
-		"Autenticato": true,
-		"Errore":      "",
-	}
-}
+
+// NOTA: generaMappaDatiBase qui è stata rimossa perché ora usiamo
+// quella presente in loginUtente.go, che è stata allineata per accettare (*http.Request).
 
 func handleGetPassword(w http.ResponseWriter, r *http.Request) {
-	// Carica la mappa completa con tutti i riferimenti grafici funzionanti
 	data := generaMappaDatiBase(r)
-	renderTemplate(w, data)
+	// Cambiamo dinamicamente il valore IsForced se necessario
+	data["IsForced"] = r.URL.Query().Get("reason") == "force"
+	data["Autenticato"] = true
+
+	renderTemplate(w, data) // Sfrutta la funzione definita in loginUtente.go
 }
 
 func handlePostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -71,10 +53,8 @@ func handlePostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// Recuperiamo la mappa dati base per non perdere i loghi in caso di ricaricamento con errore
 	data := generaMappaDatiBase(r)
 
-	// CORRETTO: Lettura dei campi coerenti con il nuovo modulo HTML Bootstrap
 	password1 := r.FormValue("password1")
 	password2 := r.FormValue("password2")
 
@@ -103,7 +83,6 @@ func handlePostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// Reindirizzamento atomico verso la rotta di logout nativa o dashboard
 	http.Redirect(w, r, "/logout", http.StatusSeeOther)
 }
 
@@ -185,7 +164,7 @@ func isPasswordValidHash(hash string) bool {
 	if hash == "" || len(hash) != 60 {
 		return false
 	}
-	if !strings.HasPrefix(hash, "$2a$") && !strings.HasPrefix(hash, "$2b$") && !strings.HasPrefix(hash, "$2y$") {
+	if !strings.HasPrefix(hash, "$2a$") && !strings.HasPrefix(hash, "$2y$") && !strings.HasPrefix(hash, "$2b$") {
 		return false
 	}
 	return true
@@ -201,34 +180,4 @@ func getUsernameFromSession(r *http.Request) string {
 		return ""
 	}
 	return username
-}
-
-func SetSessionCookie(w http.ResponseWriter, username string) error {
-	encryptedUser, err := Encrypt(username, secretKey)
-	if err != nil {
-		return err
-	}
-	http.SetCookie(w, &http.Cookie{
-		Name:     CookieSessionName,
-		Value:    encryptedUser,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
-	})
-	return nil
-}
-
-func renderTemplate(w http.ResponseWriter, data interface{}) {
-	tmpl, err := template.ParseFiles(layoutPath, templatePath)
-	if err != nil {
-		http.Error(w, "Errore template: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err = tmpl.ExecuteTemplate(w, "layout", data)
-	if err != nil {
-		http.Error(w, "Errore rendering: "+err.Error(), http.StatusInternalServerError)
-	}
 }

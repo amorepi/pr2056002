@@ -10,6 +10,7 @@ bin/
 *.test
 *.txt
 *.out
+treeFunc.go
 
 # File di configurazione e log locali
 *.env

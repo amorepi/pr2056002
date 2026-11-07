@@ -1,4 +1,4 @@
-package handlers
+package dashboard
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"pr2056002/pkg/dashboard"
 	"pr2056002/pkg/render"
 
 	"golang.org/x/crypto/bcrypt"
@@ -15,7 +14,7 @@ import (
 
 // BootstrapDBHandler gestisce la creazione della tabella utenti e l'auto-configurazione del file .env
 func BootstrapDBHandler(w http.ResponseWriter, r *http.Request) {
-	db := dashboard.GetDatabase()
+	db := GetDatabase() // Recupera la connessione interna al pacchetto
 
 	// 1. BLOCCO LOGICO AUTOMATICO: Controlliamo l'effettiva presenza fisica nel DB
 	var esiste bool
@@ -40,7 +39,7 @@ func BootstrapDBHandler(w http.ResponseWriter, r *http.Request) {
 			"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
 			"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
 			"UserName":    "Ospite",
-			"Autenticato": false, // Cambia in true se il cookie di sessione è valido
+			"Autenticato": false,
 		}
 
 		tmpl, err := template.ParseFiles("html/templates/layout.html", "html/templates/bootstrap.html")
@@ -76,7 +75,6 @@ func BootstrapDBHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Errore interno database", http.StatusInternalServerError)
 			return
 		}
-		// In caso di panico o fallimento, esegue il rollback sicuro delle modifiche
 		defer tx.Rollback()
 
 		// A. CREAZIONE TABELLA
@@ -118,14 +116,13 @@ func BootstrapDBHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// COMMIT DELLA TRANSAZIONE: Scrittura definitiva su disco del DB
 		if err := tx.Commit(); err != nil {
 			log.Printf("[BOOTSTRAP ERRORE] Commit fallito: %v", err)
 			http.Error(w, "Errore salvataggio dati", http.StatusInternalServerError)
 			return
 		}
 
-		// C. AGGIORNAMENTO FILE .ENV FISICO (Solo a valle del successo sul DB)
+		// C. AGGIORNAMENTO FILE .ENV FISICO
 		fileEnv, err := os.OpenFile(".env", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 		if err == nil {
 			_, _ = fileEnv.WriteString(fmt.Sprintf("\n# Configurazione generata automaticamente al bootstrap\nBOOTSTRAP_HASH=\"%s\"\n", stringaHash))
