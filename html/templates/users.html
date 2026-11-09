@@ -6,7 +6,6 @@
       <thead class="table-dark">
         <tr>
           <th>ID</th>
-          <th>Username</th>
           <th>Email</th>
           <th>Cellulare</th>
           <th>Ruolo</th>
@@ -18,7 +17,6 @@
         {{range .Users}}
         <tr>
           <td>{{.ID}}</td>
-          <td class="fw-bold">{{.Username}}</td>
           <td>{{.Email}}</td>
           <td><code>{{.Cellulare}}</code></td>
           <td><span class="badge bg-secondary">{{.Role}}</span></td>

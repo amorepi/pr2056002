@@ -18,7 +18,7 @@ import (
 var secretKey = []byte("chiave-segreta-di-32-caratteri!")
 
 // ==========================================
-// 1. ROTTE (Rinominata per eliminare il DuplicateDecl ed essere visibile da main.go)
+// 1. ROTTE
 // ==========================================
 func RegisterPasswordRoutes(mux *http.ServeMux, db *sql.DB) {
 	mux.HandleFunc("/modificaPassword", EnforceSecurePasswordMiddleware(db, func(w http.ResponseWriter, r *http.Request) {
@@ -34,9 +34,6 @@ func RegisterPasswordRoutes(mux *http.ServeMux, db *sql.DB) {
 // 2. GESTORI (Handlers)
 // ==========================================
 
-// NOTA: generaMappaDatiBase qui è stata rimossa perché ora usiamo
-// quella presente in loginUtente.go, che è stata allineata per accettare (*http.Request).
-
 func handleGetPassword(w http.ResponseWriter, r *http.Request) {
 	data := generaMappaDatiBase(r)
 	// Cambiamo dinamicamente il valore IsForced se necessario
@@ -47,8 +44,8 @@ func handleGetPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	username := getUsernameFromSession(r)
-	if username == "" {
+	emailcell := getEmailcellFromSession(r)
+	if emailcell == "" {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -76,7 +73,7 @@ func handlePostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	_, err = db.Exec("UPDATE users SET password_hash = $1 WHERE username = $2", string(hashedBytes), username)
+	_, err = db.Exec("UPDATE users SET password_hash = $1 WHERE email = $2 OR cellulare = $2", string(hashedBytes), emailcell)
 	if err != nil {
 		log.Printf("[ERRORE DB] Aggiornamento fallito: %v", err)
 		http.Error(w, "Errore database", http.StatusInternalServerError)
@@ -136,14 +133,14 @@ func Decrypt(cryptoText string, key []byte) (string, error) {
 // ==========================================
 func EnforceSecurePasswordMiddleware(db *sql.DB, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		username := getUsernameFromSession(r)
-		if username == "" {
+		emailcell := getEmailcellFromSession(r)
+		if emailcell == "" {
 			next.ServeHTTP(w, r)
 			return
 		}
 
 		var passwordHash string
-		err := db.QueryRow("SELECT password_hash FROM users WHERE username = $1", username).Scan(&passwordHash)
+		err := db.QueryRow("SELECT password_hash FROM users WHERE email = $1 OR cellulare = $1", emailcell).Scan(&passwordHash)
 		if err != nil {
 			next.ServeHTTP(w, r)
 			return
@@ -170,14 +167,14 @@ func isPasswordValidHash(hash string) bool {
 	return true
 }
 
-func getUsernameFromSession(r *http.Request) string {
+func getEmailcellFromSession(r *http.Request) string {
 	cookie, err := r.Cookie(CookieSessionName)
 	if err != nil {
 		return ""
 	}
-	username, err := Decrypt(cookie.Value, secretKey)
+	emailcell, err := Decrypt(cookie.Value, secretKey)
 	if err != nil {
 		return ""
 	}
-	return username
+	return emailcell
 }

@@ -23,9 +23,6 @@ func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 	// REGISTRAZIONE ROTTE DEI MODULI SPECIFICI
 	// ==========================================
 
-	// Rotta di bootstrap auto-distruttiva
-	mux.HandleFunc("/creausers", dashboard.BootstrapDBHandler)
-
 	// Rotte del modulo utenti
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
@@ -86,7 +83,6 @@ func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 				"Version":     render.CurrentVersion,
 				"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
 				"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
-				"UserName":    sessione.Username,
 				"Autenticato": sessione.Autenticato,
 			}
 

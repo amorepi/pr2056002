@@ -1,0 +1,57 @@
+{{define "body"}}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-md-8 col-lg-6 text-center">
+    <div class="p-5 bg-white border rounded shadow-sm">
+
+      <h2 class="card-title text-center mb-4">Nuova Registrazione</h2>
+
+      {{if .Errore}}
+        <div class="alert alert-danger" role="alert">
+          {{.Errore}}
+        </div>
+      {{end}}
+
+      <form action="/signup" method="POST">
+
+        <div class="mb-3">
+          <label for="cognome" class="form-label d-block text-start">Cognome</label>
+          <input type="text" class="form-control" id="cognome" name="cognome" required autofocus>
+        </div>
+
+        <div class="mb-3">
+          <label for="nome" class="form-label d-block text-start">Nome</label>
+          <input type="text" class="form-control" id="nome" name="nome" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label d-block text-start">Indirizzo Email</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="nome@esempio.it" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="cellulare" class="form-label d-block text-start">Numero Cellulare</label>
+          <input type="tel" class="form-control" id="cellulare" name="cellulare" placeholder="+393331234567" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label d-block text-start">Password (almeno 8 caratteri)</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password" minlength="8" required>
+            <button class="btn btn-outline-secondary text-dark bg-light d-flex align-items-center justify-content-center" type="button" id="togglePassword" 
+                    onclick="const p = document.getElementById('password'); const icon = this.querySelector('i'); if (p.type === 'password') { p.type = 'text'; icon.classList.replace('bi-eye', 'bi-eye-slash'); } else { p.type = 'password'; icon.classList.replace('bi-eye-slash', 'bi-eye'); }">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-success">INVIA REGISTRAZIONE</button>
+        </div>
+      </form>
+
+      <div class="text-center mt-3">
+          <small>Hai già un account? <a href="/login">Vai al Login</a></small>
+      </div>
+    </div>
+</div>
+{{end}}

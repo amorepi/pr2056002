@@ -11,7 +11,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// InizializzaAmbiente gestisce il caricamento del .env e la configurazione hardware dei Log (Mac vs VPS)
+// Logger pubblici dedicati (inizializzati sul default per sicurezza anti-panic)
+var (
+	LogFile    *log.Logger = log.Default()
+	LogConsole *log.Logger = log.Default()
+)
+
+// Gestisce il caricamento del .env e la configurazione hardware dei Log (Mac vs VPS)
 func InizializzaAmbiente() {
 	// 1. Forza il tracciamento di data, ora e riga esatta nei log di sistema
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -23,7 +29,6 @@ func InizializzaAmbiente() {
 	}
 
 	// 3. DETERMINAZIONE HARDWARE DELL'AMBIENTE (Mac vs VPS Linux)
-	// Controlliamo l'esistenza inconfutabile della cartella /var/www
 	_, statErr := os.Stat("/var/www")
 	isProduction := statErr == nil
 
@@ -34,23 +39,30 @@ func InizializzaAmbiente() {
 		logPathGo = "/var/log/nginx/pr2056002_go.log"
 		logPathNginx = "/var/log/nginx/pr2056002_ssl_error.log"
 	} else {
-		// Assicuriamoci che si chiami esattamente development.log
 		logPathGo = "development.log"
 		logPathNginx = "/opt/homebrew/var/log/nginx/error.log"
 	}
 
-	// Questa istruzione è fondamentale! Forza Go a mettere il percorso in memoria
+	// Forza Go a mettere il percorso in memoria
 	os.Setenv("LOG_PATH_GO", logPathGo)
 	os.Setenv("LOG_PATH_NGINX", logPathNginx)
 
-	// 4. DIROTTARE I LOG STANDARD SU MULTI-WRITER (Terminale + File)
+	// 4. CONFIGURAZIONE CANALI DI LOG (Unico punto di apertura file)
 	logFile, err := os.OpenFile(logPathGo, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("[AVVISO] Impossibile aprire il file di log %s. Output solo su terminale: %v", logPathGo, err)
+		LogFile = log.New(os.Stdout, "", log.LstdFlags)
+		LogConsole = log.New(os.Stdout, "", log.LstdFlags)
 		return
 	}
 
-	// Il MultiWriter permette a log.Printf di stampare sia a schermo che nel file .log
+	// Logger dedicato SOLO al file (development.log su Mac, pr2056002_go.log su VPS)
+	LogFile = log.New(logFile, "", log.LstdFlags)
+
+	// Logger dedicato SOLO alla console
+	LogConsole = log.New(os.Stdout, "", log.LstdFlags)
+
+	// MultiWriter standard: log.Println / log.Printf scrivono su ENTRAMBI
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
 }

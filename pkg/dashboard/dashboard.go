@@ -33,12 +33,12 @@ type ToolButton struct {
 	Label string
 }
 
-// DashboardContext raccoglie l'intero payload dati richiesto da dashboard.html
+// raccoglie l'intero payload dati richiesto da dashboard.html
 type DashboardContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
-	UserName    string
+	UserRole    string
 	Version     string
 	Metrics     []MetricCard
 	Tools       []ToolButton
@@ -204,12 +204,27 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		{Href: "/allUsers", Label: "Tabella Utenti"},
 	}
 
+	// Determina la dizione in italiano in base al ruolo della sessione
+	var ruoloVisualizzato string
+	if !sessione.Autenticato {
+		ruoloVisualizzato = "Anonimo"
+	} else {
+		switch sessione.Ruolo { // Presumendo che l'oggetto sessione contenga il ruolo
+		case "admin":
+			ruoloVisualizzato = "Amministratore"
+		case "user":
+			ruoloVisualizzato = "Utente"
+		default:
+			ruoloVisualizzato = "Utente"
+		}
+	}
+
 	// 3. Il nome utente viene iniettato dinamicamente (mostrerà "amorepi" o chi effettua il login)
 	data := DashboardContext{
 		ProjectName: project,
 		LogoUrl:     logoUrl,
 		AvatarUrl:   avatarUrl,
-		UserName:    sessione.Username,
+		UserRole:    ruoloVisualizzato,
 		Version:     render.CurrentVersion,
 		Metrics:     metrics,
 		Tools:       tools,

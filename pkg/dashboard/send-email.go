@@ -53,7 +53,6 @@ func SendTestEmailHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
 	}
 
@@ -75,7 +74,6 @@ func mostraNotificaErrore(w http.ResponseWriter, r *http.Request, project, titol
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
 		Title:       titolo,
 		Subtitle:    sottotitolo,

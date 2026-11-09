@@ -18,7 +18,6 @@ type PageContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
-	UserName    string
 	Autenticato bool
 	Version     string
 }
@@ -39,7 +38,6 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 		ProjectName: project,
 		LogoUrl:     logoUrl,
 		AvatarUrl:   avatarUrl,
-		UserName:    "Amministratore",
 		Version:     CurrentVersion,
 	}
 
@@ -102,7 +100,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 			ProjectName: project,
 			LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 			AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-			UserName:    "Amministratore",
 			Version:     CurrentVersion,
 		}
 
@@ -127,7 +124,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     CurrentVersion,
 	}
 

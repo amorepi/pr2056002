@@ -18,7 +18,6 @@ const CookieSessionName = "session_token"
 // TokenPayload contiene tutte le informazioni utili dell'utente necessarie al progetto senza rieseguire query.
 type TokenPayload struct {
 	UserID    int64     `json:"user_id"`
-	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Cellulare string    `json:"cellulare"`
 	Ruolo     string    `json:"ruolo"`
@@ -30,10 +29,9 @@ type TokenPayload struct {
 var segretoAES = []byte("chiave-segreta-da-32-caratteri!!")
 
 // GeneraTokenCriptato prende l'intero set di dati utente, lo serializza in JSON e lo cifra con AES-GCM.
-func GeneraTokenCriptato(userID int64, username, email, cellulare, ruolo string, attivo bool, durata time.Duration) (string, error) {
+func GeneraTokenCriptato(userID int64, email, cellulare, ruolo string, attivo bool, durata time.Duration) (string, error) {
 	payload := TokenPayload{
 		UserID:    userID,
-		Username:  username,
 		Email:     email,
 		Cellulare: cellulare,
 		Ruolo:     ruolo,
@@ -107,10 +105,10 @@ func ValidaTokenCriptato(tokenString string) (*TokenPayload, error) {
 }
 
 // SetSessionCookie impacchetta tutte le specifiche dell'utente nel cookie crittografato AES-GCM.
-func SetSessionCookie(w http.ResponseWriter, userID int64, username, email, cellulare, ruolo string, attivo bool) error {
+func SetSessionCookie(w http.ResponseWriter, userID int64, email, cellulare, ruolo string, attivo bool) error {
 	durataSessione := 24 * time.Hour
 
-	tokenCriptato, err := GeneraTokenCriptato(userID, username, email, cellulare, ruolo, attivo, durataSessione)
+	tokenCriptato, err := GeneraTokenCriptato(userID, email, cellulare, ruolo, attivo, durataSessione)
 	if err != nil {
 		return err
 	}

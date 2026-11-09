@@ -19,7 +19,6 @@ type StructureContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
-	UserName    string
 	Version     string
 	TreeOutput  string
 }
@@ -29,7 +28,6 @@ type MarkdownContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
-	UserName    string
 	Version     string
 	Title       string
 	Subtitle    string
@@ -41,7 +39,6 @@ type NotificaContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
-	UserName    string
 	Version     string
 	Title       string
 	Subtitle    string
@@ -61,7 +58,6 @@ func StructureHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
 		TreeOutput:  treeOutput,
 	}
@@ -84,7 +80,6 @@ func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, tit
 		ProjectName: os.Getenv("PROJECT"),
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
 		Title:       title,
 		Subtitle:    subtitle,
@@ -97,7 +92,8 @@ func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, tit
 // UserRow definisce lo schema reale per i record estratti dal catalogo SQL aggiornato
 type UserRow struct {
 	ID        int
-	Username  string
+	Cognome   string
+	Nome      string
 	Email     string
 	Cellulare string
 	Role      string
@@ -110,7 +106,6 @@ type UsersContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
-	UserName    string
 	Version     string
 	Users       []UserRow
 }
@@ -120,7 +115,7 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var utentiReali []UserRow
 
 	// Query strutturata sui nuovi campi reali della tabella utenti
-	query := "SELECT id, username, email, cellulare, ruolo, attivo, creato_il FROM users ORDER BY id ASC"
+	query := "SELECT id, email, cellulare, ruolo, attivo, creato_il FROM users ORDER BY id ASC"
 	rows, err := db.Query(query)
 
 	if err != nil {
@@ -129,7 +124,6 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		utentiReali = []UserRow{
 			{
 				ID:        0,
-				Username:  "In attesa di attivazione",
 				Email:     "Tabella non inizializzata nel DB",
 				Cellulare: "N/D",
 				Role:      "guest",
@@ -144,7 +138,7 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 			var attivoBool bool
 			var creatoIlTime time.Time
 
-			err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.Cellulare, &u.Role, &attivoBool, &creatoIlTime)
+			err := rows.Scan(&u.ID, &u.Email, &u.Cellulare, &u.Role, &attivoBool, &creatoIlTime)
 			if err != nil {
 				log.Printf("[DB ERRORE]: Scansione record fallita: %v", err)
 				continue
@@ -171,7 +165,6 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: os.Getenv("PROJECT"),
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
 		Users:       utentiReali,
 	}
@@ -228,7 +221,6 @@ func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: os.Getenv("PROJECT"),
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		UserName:    "Amministratore",
 		Version:     render.CurrentVersion,
 		TreeOutput:  outputFinale,
 	}

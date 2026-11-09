@@ -19,7 +19,6 @@ const (
 // UserSession racchiude lo stato di autorizzazione corrente
 type UserSession struct {
 	ID          int
-	Username    string
 	Ruolo       string
 	Autenticato bool
 }
@@ -32,7 +31,6 @@ func SentinellaInerte(next http.Handler) http.Handler {
 		// 1. STATO DI DEFAULT: Utente Autonomo (Parte statica pubblica, navigazione anonima)
 		sessione := UserSession{
 			ID:          0,
-			Username:    "Ospite",
 			Ruolo:       RuoloAnonimo,
 			Autenticato: false,
 		}
@@ -44,9 +42,9 @@ func SentinellaInerte(next http.Handler) http.Handler {
 			// In questa fase simuliamo la decodifica del token o il match dei test:
 			switch cookie.Value {
 			case "session_token_amorepi":
-				sessione = UserSession{ID: 1, Username: "amorepi", Ruolo: RuoloAdmin, Autenticato: true}
+				sessione = UserSession{ID: 1, Ruolo: RuoloAdmin, Autenticato: true}
 			case "session_token_piero":
-				sessione = UserSession{ID: 2, Username: "piero", Ruolo: RuoloUtente, Autenticato: true}
+				sessione = UserSession{ID: 2, Ruolo: RuoloUtente, Autenticato: true}
 			}
 		}
 

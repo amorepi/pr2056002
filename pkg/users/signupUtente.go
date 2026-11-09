@@ -11,13 +11,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Regex per la validazione del cellulare (ereditata dal vecchio codice)
 var rxCellulare = regexp.MustCompile(`^\+?[0-9]{9,15}$`)
 
-// Il template del corpo del signup (assicurati che il file esista in questo percorso)
-const signupTemplatePath = "html/templates/signup.html"
+const signupTemplatePath = "pkg/users/signupUtente-body.html"
 
-// HandleGetSignup mostra la pagina di registrazione con il layout base
 func HandleGetSignup(w http.ResponseWriter, r *http.Request) {
 	data := generaMappaDatiBase(r)
 
@@ -31,17 +28,17 @@ func HandleGetSignup(w http.ResponseWriter, r *http.Request) {
 	_ = tmpl.ExecuteTemplate(w, "layout", data)
 }
 
-// HandlePostSignup riceve i dati del form ed esegue la registrazione su PostgreSQL 17
 func HandlePostSignup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	data := generaMappaDatiBase(r)
 
-	username := strings.TrimSpace(r.FormValue("username"))
+	cognome := strings.TrimSpace(r.FormValue("cognome"))
+	nome := strings.TrimSpace(r.FormValue("nome"))
 	email := strings.TrimSpace(r.FormValue("email"))
 	cellulare := strings.TrimSpace(r.FormValue("cellulare"))
 	password := r.FormValue("password")
 
 	// 1. Validazione dei campi obbligatori
-	if username == "" || email == "" || cellulare == "" || password == "" {
+	if cognome == "" || nome == "" || email == "" || cellulare == "" || password == "" {
 		data["Errore"] = "Tutti i campi sono obbligatori."
 		renderSignupError(w, data)
 		return
@@ -69,16 +66,15 @@ func HandlePostSignup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	// 5. Inserimento del nuovo utente nel database (Ruolo 'user' e attivo di default)
-	query := `INSERT INTO users (username, email, cellulare, password_hash, ruolo, attivo) 
-              VALUES ($1, $2, $3, $4, 'user', true);`
+	// 5. Inserimento del nuovo utente nel database (allineato allo schema di initialize)
+	query := `INSERT INTO users (cognome, nome, email, cellulare, password_hash, ruolo, attivo) 
+              VALUES ($1, $2, $3, $4, $5, 'user', true);`
 
-	_, err = db.Exec(query, username, email, cellulare, string(hashBytes))
+	_, err = db.Exec(query, cognome, nome, email, cellulare, string(hashBytes))
 	if err != nil {
 		log.Printf("[SIGNUP ERRORE] Inserimento a database fallito: %v", err)
-		// Gestione dell'errore in caso di vincolo UNIQUE violato (es. duplicato)
-		if strings.Contains(err.Error(), "unique constraint") {
-			data["Errore"] = "Username, Email o Cellulare già registrati nel sistema."
+		if strings.Contains(err.Error(), "unique constraint") || strings.Contains(err.Error(), "duplicate key") {
+			data["Errore"] = "Email o Cellulare già registrati nel sistema."
 			renderSignupError(w, data)
 			return
 		}
@@ -86,13 +82,11 @@ func HandlePostSignup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	log.Printf("[SISTEMA] Nuovo utente operativo registrato con successo: %s", username)
+	log.Printf("[SISTEMA] Nuovo utente operativo registrato con successo: %s", email)
 
-	// Registrazione avvenuta: reindirizziamo al login comunicando il successo dell'operazione
 	http.Redirect(w, r, "/login?registrato=successo", http.StatusSeeOther)
 }
 
-// Helper interno per effettuare il rendering della pagina in caso di errore di validazione
 func renderSignupError(w http.ResponseWriter, data interface{}) {
 	tmpl, err := template.ParseFiles(layoutPath, signupTemplatePath)
 	if err != nil {

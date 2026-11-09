@@ -8,6 +8,7 @@ import (
 
 	"pr2056002/pkg"
 	"pr2056002/pkg/dashboard"
+	"pr2056002/pkg/initialize"
 	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 	"pr2056002/pkg/utils"
@@ -19,6 +20,9 @@ import (
 
 func main() {
 	utils.InizializzaAmbiente()
+	utils.InizializzaFlusso()
+	// Inserire la seguente istruzione all'inizio della funzione a partire dalla quale si vuole attivare la traccia
+	// utils.Traccia()
 
 	// Recupero della stringa DSN e connessione a PostgreSQL 17
 	dbConnStr := os.Getenv("DATABASE_URL")
@@ -36,7 +40,12 @@ func main() {
 		log.Fatalf("CRITICAL BLINK: Il database non risponde o non esiste nel catalogo PostgreSQL: %v", err)
 	}
 
-	// 2. Allineamento della versione globale sul motore grafico isolato
+	// =========================================================================
+	if err := initialize.AutoBootstrapDB(db); err != nil {
+		log.Fatalf("[ERRORE CRITICO AVVIO] Inizializzazione database fallita: %v", err)
+	}
+	// =========================================================================
+
 	render.CurrentVersion = os.Getenv("APP_VERSION")
 
 	// Passa la connessione al package dashboard
