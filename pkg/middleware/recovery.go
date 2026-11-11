@@ -3,7 +3,8 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"pr2056002/pkg/render" // Importa il motore grafico per disegnare la pagina 500
+	"pr2056002/pkg/render"
+	"pr2056002/pkg/users" // <-- Aggiunto l'import del pacchetto users
 	"runtime/debug"
 )
 
@@ -24,8 +25,11 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 					return
 				}
 
-				// Altrimenti, rendering dinamico del file 500.html tramite il pacchetto render
-				render.RenderTemplate(w, r, "500.html", http.StatusInternalServerError)
+				// Genera la mappa dati base per la navbar della pagina 500
+				dataEmergenza := users.GeneraMappaDatiBase(r)
+
+				// Rendering dinamico del file 500.html passando l'interfaccia data richiesta
+				render.RenderTemplate(w, r, "500.html", http.StatusInternalServerError, dataEmergenza)
 			}
 		}()
 

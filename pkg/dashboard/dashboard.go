@@ -16,7 +16,8 @@ import (
 
 	"pr2056002/pkg/render"
 	"pr2056002/pkg/users"
-	"pr2056002/pkg/utils")
+	"pr2056002/pkg/utils"
+)
 
 // MetricCard definisce la struttura dati per le card hardware/software
 type MetricCard struct {
@@ -231,7 +232,7 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
-		render.HandleTemplateError(w, r, err)
+		render.HandleTemplateError(w, r, err, data)
 		return
 	}
 

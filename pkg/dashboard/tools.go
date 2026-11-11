@@ -11,23 +11,8 @@ import (
 	"time"
 
 	"pr2056002/pkg/render"
-	"pr2056002/pkg/users"
 	"pr2056002/pkg/utils"
 )
-
-// Helper interno per verificare il ruolo admin e popolare i dati base della navbar
-func verificaAdminENavbar(w http.ResponseWriter, r *http.Request) (string, bool, string, bool) {
-	payload, err := users.GetSessionPayload(r)
-	if err != nil || !payload.Attivo || payload.Ruolo != "admin" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return "", false, "", false
-	}
-	project := os.Getenv("PROJECT")
-	if project == "" {
-		project = "PR2056002"
-	}
-	return project, true, "Amministratore", true
-}
 
 // StructureContext definisce i parametri per la visualizzazione dell'albero dei file
 type StructureContext struct {
@@ -67,10 +52,7 @@ type NotificaContext struct {
 
 // StructureHandler genera la mappa dei file richiamando BuildTree
 func StructureHandler(w http.ResponseWriter, r *http.Request) {
-	project, auth, role, ok := verificaAdminENavbar(w, r)
-	if !ok {
-		return
-	}
+	project := os.Getenv("PROJECT")
 
 	currentDirectory, _ := os.Getwd()
 	treeOutput := fmt.Sprintf("%s/\n%s", project, BuildTree(currentDirectory, ""))
@@ -79,8 +61,8 @@ func StructureHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Autenticato: auth,
-		UserRole:    role,
+		Autenticato: true,
+		UserRole:    "Amministratore",
 		Version:     utils.CurrentVersion,
 		TreeOutput:  treeOutput,
 	}
@@ -90,10 +72,7 @@ func StructureHandler(w http.ResponseWriter, r *http.Request) {
 
 // ViewMarkdownHandler visualizza a schermo il contenuto convertito dei file di testo
 func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, title, subtitle string) {
-	project, auth, role, ok := verificaAdminENavbar(w, r)
-	if !ok {
-		return
-	}
+	project := os.Getenv("PROJECT")
 
 	data, err := os.ReadFile(targetFile)
 	var contenuto template.HTML
@@ -108,8 +87,8 @@ func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, tit
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Autenticato: auth,
-		UserRole:    role,
+		Autenticato: true,
+		UserRole:    "Amministratore",
 		Version:     utils.CurrentVersion,
 		Title:       title,
 		Subtitle:    subtitle,
@@ -144,10 +123,7 @@ type UsersContext struct {
 
 // AllUsersHandler interroga PostgreSQL 17 ed estrae in tempo reale le credenziali
 func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
-	project, auth, role, ok := verificaAdminENavbar(w, r)
-	if !ok {
-		return
-	}
+	project := os.Getenv("PROJECT")
 
 	var utentiReali []UserRow
 
@@ -199,8 +175,8 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Autenticato: auth,
-		UserRole:    role,
+		Autenticato: true,
+		UserRole:    "Amministratore",
 		Version:     utils.CurrentVersion,
 		Users:       utentiReali,
 	}
@@ -221,7 +197,7 @@ func eseguiTemplateProtetto(w http.ResponseWriter, r *http.Request, pagePath str
 	var buf bytes.Buffer
 	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
-		render.HandleTemplateError(w, r, err)
+		render.HandleTemplateError(w, r, err, data)
 		return
 	}
 
@@ -232,10 +208,7 @@ func eseguiTemplateProtetto(w http.ResponseWriter, r *http.Request, pagePath str
 
 // DevelopmentLogHandler legge il diario di Go e lo formatta in ordine cronologico inverso
 func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
-	project, auth, role, ok := verificaAdminENavbar(w, r)
-	if !ok {
-		return
-	}
+	project := os.Getenv("PROJECT")
 
 	logPath := os.Getenv("LOG_PATH_GO")
 	var righeInvertite []string
@@ -262,8 +235,8 @@ func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Autenticato: auth,
-		UserRole:    role,
+		Autenticato: true,
+		UserRole:    "Amministratore",
 		Version:     utils.CurrentVersion,
 		TreeOutput:  outputFinale,
 	}

@@ -1,1 +1,30 @@
 2026/11/11 10:55:01 router.go:63: [ERRORE ROUTER] Compilazione template Home fallita: template: layout-home-body.html:6: function "os" not defined
+2026/11/11 23:22:42 render.go:65: [ECCEZIONE 500] sulla rotta /test-error-500 -> TEST ECCEZIONE 500 - Verifica allerta Mailer
+--- STACK TRACE SEPARATO ---
+goroutine 21 [running]:
+runtime/debug.Stack()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/debug/stack.go:26 +0x64
+pr2056002/pkg/render.HandleTemplateError({0x10522ab18, 0x471376b88b40}, 0x471376c1cf00, {0x105227dc8, 0x471376c3ee70}, {0x1051a28e0, 0x471376c41230})
+	/Users/piero/Projects/pr2056002/pkg/render/render.go:64 +0x5c
+pr2056002/pkg/router.RegisterRoutes.func1({0x10522ab18, 0x471376b88b40}, 0x471376c1cf00)
+	/Users/piero/Projects/pr2056002/pkg/router/router.go:152 +0xf64
+net/http.HandlerFunc.ServeHTTP(0x471376a62180?, {0x10522ab18?, 0x471376b88b40?}, 0x1052098d8?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.(*ServeMux).ServeHTTP(0x471376c1cdc0?, {0x10522ab18, 0x471376b88b40}, 0x471376c1cf00)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2903 +0x194
+pr2056002/pkg/middleware.SentinellaInerte.func1({0x10522ab18, 0x471376b88b40}, 0x471376c1cdc0)
+	/Users/piero/Projects/pr2056002/pkg/middleware/auth.go:58 +0x210
+net/http.HandlerFunc.ServeHTTP(0x471376ad5a58?, {0x10522ab18?, 0x471376b88b40?}, 0x104c1bf90?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+pr2056002/pkg/middleware.RecoveryMiddleware.func1({0x10522ab18?, 0x471376b88b40?}, 0x471376ad5af8?)
+	/Users/piero/Projects/pr2056002/pkg/middleware/recovery.go:36 +0x6c
+net/http.HandlerFunc.ServeHTTP(0x1052191f8?, {0x10522ab18?, 0x471376b88b40?}, 0x471376ad5ae0?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2338 +0x38
+net/http.serverHandler.ServeHTTP({0x471376a1a5c0?}, {0x10522ab18?, 0x471376b88b40?}, 0x1?)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3413 +0xb0
+net/http.(*conn).serve(0x471376a7e2d0, {0x10522b3e8, 0x471376a1fcb0})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:2137 +0x5a0
+created by net/http.(*Server).Serve in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/net/http/server.go:3581 +0x3e8
+
+--------------------------------------

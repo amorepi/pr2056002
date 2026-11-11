@@ -9,46 +9,27 @@ import (
 	"os"
 	"runtime/debug"
 
-	"pr2056002/pkg/users"
 	"pr2056002/pkg/utils"
 )
 
-type PageContext struct {
-	ProjectName string
-	LogoUrl     string
-	AvatarUrl   string
-	Autenticato bool
-	UserRole    string
-	Version     string
-}
-
-type MailAlertContext struct {
-	ProjectName  string
-	Path         string
-	ErrorMessage string
-	StackTrace   string
-}
-
 // ==========================================
 // Renderizzazione di un Template
+// Riceve data dall'esterno per mantenere la sessione integra
 // ==========================================
-func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string, statusCode int) {
-	// Sfrutta la mappa unificata ed esportata per mantenere la sessione integra
-	data := users.GeneraMappaDatiBase(r)
-
+func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string, statusCode int, data interface{}) {
 	layoutPath := "html/templates/layout.html"
 	pagePath := "html/templates/" + templatePage
 
 	tmplt, err := template.ParseFiles(layoutPath, pagePath)
 	if err != nil {
-		HandleTemplateError(w, r, err)
+		HandleTemplateError(w, r, err, data)
 		return
 	}
 
 	var buf bytes.Buffer
 	err = tmplt.ExecuteTemplate(&buf, "layout", data)
 	if err != nil {
-		HandleTemplateError(w, r, err)
+		HandleTemplateError(w, r, err, data)
 		return
 	}
 
@@ -59,21 +40,23 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, templatePage string,
 
 // ==========================================
 // Renderizzazione del Template Errore 404
+// Riceve data per preservare l'estetica della barra superiore
 // ==========================================
-func Error404Handler(w http.ResponseWriter, r *http.Request) {
+func Error404Handler(w http.ResponseWriter, r *http.Request, data interface{}) {
 	if len(r.URL.Path) >= 4 && r.URL.Path[:4] == "/api" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, `{"success":false,"error":"Risorsa non trovata","path":"%s"}`, r.URL.Path)
 		return
 	}
-	RenderTemplate(w, r, "404.html", http.StatusNotFound)
+	RenderTemplate(w, r, "404.html", http.StatusNotFound, data)
 }
 
 // ==========================================
-// Handle all'errore di un Template
+// Handle all'errore di un Template (500)
+// Riceve data per mantenere attiva l'autenticazione a video
 // ==========================================
-func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
+func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error, data interface{}) {
 	if err == nil {
 		return
 	}
@@ -99,9 +82,6 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 		project = "PR2056002"
 	}
 
-	// Recupera la sessione centralizzata per preservare la navbar
-	data := users.GeneraMappaDatiBase(r)
-
 	// ==========================================
 	// avvia una goroutine: la funzione viene eseguita in background e in modo asincrono
 	// (in parallelo) rispetto al resto del programma.
@@ -114,7 +94,12 @@ func HandleTemplateError(w http.ResponseWriter, r *http.Request, err error) {
 			return
 		}
 
-		mailData := MailAlertContext{
+		mailData := struct {
+			ProjectName  string
+			Path         string
+			ErrorMessage string
+			StackTrace   string
+		}{
 			ProjectName:  project,
 			Path:         path,
 			ErrorMessage: errText,

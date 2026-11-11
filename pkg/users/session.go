@@ -27,10 +27,16 @@ type TokenPayload struct {
 }
 
 // Apri il tuo terminale del Mac e lancia questo comando per generare una stringa casuale esadecimale perfetta di 32 caratteri:
-// openssl rand -hex 32
-// Assegna il codice risultante a segretoAES. In produzione, questa chiave deve essere caricata da variabili d'ambiente per motivi di sicurezza.
-// ATTENZIONE: In produzione questa chiave deve essere caricata da variabili d'ambiente
-var segretoAES = []byte("chiave-segreta-da-32-caratteri!!")
+// openssl rand -hex 16
+// Assegna il codice risultante a SEGRETO_AES nel file .env (locale) e in Systemd (produzione).
+func ottieniChiaveAES() []byte {
+	chiave := os.Getenv("SEGRETO_AES")
+	if len(chiave) != 32 {
+		// Fallback di sicurezza da 32 caratteri esatti per evitare errori a runtime
+		return []byte("chiave-segreta-da-32-caratteri!!")
+	}
+	return []byte(chiave)
+}
 
 // GeneraTokenCriptato prende l'intero set di dati utente, lo serializza in JSON e lo cifra con AES-GCM.
 func GeneraTokenCriptato(userID int64, email, cellulare, ruolo string, attivo bool, durata time.Duration) (string, error) {
@@ -48,7 +54,7 @@ func GeneraTokenCriptato(userID int64, email, cellulare, ruolo string, attivo bo
 		return "", err
 	}
 
-	block, err := aes.NewCipher(segretoAES)
+	block, err := aes.NewCipher(ottieniChiaveAES())
 	if err != nil {
 		return "", err
 	}
@@ -74,7 +80,7 @@ func ValidaTokenCriptato(tokenString string) (*TokenPayload, error) {
 		return nil, errors.New("token non valido: errore decodifica base64")
 	}
 
-	block, err := aes.NewCipher(segretoAES)
+	block, err := aes.NewCipher(ottieniChiaveAES())
 	if err != nil {
 		return nil, err
 	}
@@ -108,15 +114,15 @@ func ValidaTokenCriptato(tokenString string) (*TokenPayload, error) {
 	return &payload, nil
 }
 
-// impacchetta tutte le specifiche dell'utente nel cookie crittografato AES-GCM.
+// SetSessionCookie impacchetta tutte le specifiche dell'utente nel cookie crittografato AES-GCM.
 // Cookie configurato con queste regole:
-// Durata fissa: È impostata su 24 ore (durataSessione := 24 * time.Hour).
+// Durata: 24 ore in produzione, 30 giorni in locale.
 // Doppia verifica: La scadenza è scritta sia nel browser (Expires / MaxAge del cookie) sia dentro il payload crittografato
 // (payload.Scadenza). Anche se un utente modificasse la scadenza del cookie sul proprio browser, ValidaTokenCriptato bloccherebbe
-// comunque l'accesso allo scadere delle 24 ore.
+// comunque l'accesso allo scadere del tempo.
 // Validità ai riavvii: Essendo un token stateless (i dati sono cifrati direttamente nel cookie senza salvataggio in RAM),
-// la sessione sopravvive ai riavvii del server Go. Per invalidarla manualmente prima delle 24 ore devi cliccare
-// su Esci (/logout)
+// la sessione sopravvive ai riavvii del server Go. Per invalidarla manualmente prima della scadenza devi cliccare
+// su Esci (/logout).
 func SetSessionCookie(w http.ResponseWriter, userID int64, email, cellulare, ruolo string, attivo bool) error {
 	// Determinazione hardware dell'ambiente per adeguare le policy di sicurezza
 	_, statErr := os.Stat("/var/www")

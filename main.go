@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"pr2056002/pkg"
 	"pr2056002/pkg/dashboard"
 	"pr2056002/pkg/initialize"
 	"pr2056002/pkg/middleware"
+	"pr2056002/pkg/router"
 	"pr2056002/pkg/utils"
 
 	// Il "_" obbliga l'inclusione di questo pacchetto anche in assenza di chiamate dirette
@@ -55,7 +55,7 @@ func main() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 	// UNICO PUNTO DI REGISTRAZIONE: Passiamo sia il mux che il database al router generale
-	pkg.RegisterRoutes(mux, db)
+	router.RegisterRoutes(mux, db)
 
 	// 4. Avvio dell'ascolto di rete legato al router attivo
 	port := os.Getenv("PORT")
