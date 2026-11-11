@@ -1,3 +1,1 @@
-2026/11/09 17:27:12 [BOOTSTRAP] ATTENZIONE: Tabella 'users' mancante. Avvio procedura di inizializzazione d'emergenza...
-2026/11/09 17:27:12 [BOOTSTRAP WARNING] ADMIN_INITIAL_PASSWORD non trovata o troppo corta nel .env. Utilizzo credenziale di fallback temporanea.
-2026/11/09 17:27:12 [BOOTSTRAP] Inizializzazione completata con successo! Tabella users generata e amministratore 'piero@ingamore.it' censito correttamente.
+2026/11/11 10:55:01 router.go:63: [ERRORE ROUTER] Compilazione template Home fallita: template: layout-home-body.html:6: function "os" not defined

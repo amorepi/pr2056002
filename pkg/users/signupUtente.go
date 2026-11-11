@@ -16,7 +16,7 @@ var rxCellulare = regexp.MustCompile(`^\+?[0-9]{9,15}$`)
 const signupTemplatePath = "pkg/users/signupUtente-body.html"
 
 func HandleGetSignup(w http.ResponseWriter, r *http.Request) {
-	data := generaMappaDatiBase(r)
+	data := GeneraMappaDatiBase(r)
 
 	tmpl, err := template.ParseFiles(layoutPath, signupTemplatePath)
 	if err != nil {
@@ -29,7 +29,7 @@ func HandleGetSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlePostSignup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	data := generaMappaDatiBase(r)
+	data := GeneraMappaDatiBase(r)
 
 	cognome := strings.TrimSpace(r.FormValue("cognome"))
 	nome := strings.TrimSpace(r.FormValue("nome"))

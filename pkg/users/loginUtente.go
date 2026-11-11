@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"pr2056002/pkg/render"
+	"pr2056002/pkg/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -23,6 +23,7 @@ const (
 // 1. ROTTE
 // ==========================================
 func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
+
 	// Gestione della rotta di Login
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
@@ -45,33 +46,42 @@ func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		HandleLogout(w, r)
 	})
+
+	// Gestione della rotta di Modifica Password
+	RegisterPasswordRoutes(mux, db)
 }
 
 // ==========================================
-// 2. GESTORI (Handlers)
+// 2. GESTORI (Handlers) & DATI CONDIVISI
 // ==========================================
 
-func generaMappaDatiBase(r *http.Request) map[string]interface{} {
+// costruisce la mappa comune per layout.html in tutto il progetto
+func GeneraMappaDatiBase(r *http.Request) map[string]interface{} {
 	autenticato := false
+	userRole := ""
 
-	if cookie, err := r.Cookie(CookieSessionName); err == nil {
-		if _, err := ValidaTokenCriptato(cookie.Value); err == nil {
-			autenticato = true
+	if payload, err := GetSessionPayload(r); err == nil && payload.Attivo {
+		autenticato = true
+		if payload.Ruolo == "admin" {
+			userRole = "Amministratore"
+		} else {
+			userRole = payload.Ruolo
 		}
 	}
 
 	return map[string]interface{}{
 		"ProjectName": "PR2056002",
-		"Version":     render.CurrentVersion,
+		"Version":     utils.CurrentVersion,
 		"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
 		"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
 		"Autenticato": autenticato,
+		"UserRole":    userRole,
 		"Errore":      "",
 	}
 }
 
 func HandleGetLogin(w http.ResponseWriter, r *http.Request) {
-	data := generaMappaDatiBase(r)
+	data := GeneraMappaDatiBase(r)
 	if r.URL.Query().Get("registrato") == "successo" {
 		data["Messaggio"] = "Registrazione completata! Ora puoi accedere."
 	}
@@ -79,7 +89,7 @@ func HandleGetLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlePostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	data := generaMappaDatiBase(r)
+	data := GeneraMappaDatiBase(r)
 
 	emailcell := strings.TrimSpace(r.FormValue("emailcell"))
 	password := r.FormValue("password")
@@ -144,6 +154,9 @@ func HandlePostLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
+	_, statErr := os.Stat("/var/www")
+	isProduction := statErr == nil
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     CookieSessionName,
 		Value:    "",
@@ -151,11 +164,11 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Unix(0, 0),
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   isProduction,
 		SameSite: http.SameSiteStrictMode,
 	})
 
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 // ==========================================

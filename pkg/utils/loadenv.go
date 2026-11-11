@@ -11,6 +11,9 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// accessibile da tutto il progetto come "utils.CurrentVersion"
+var CurrentVersion string
+
 // Logger pubblici dedicati (inizializzati sul default per sicurezza anti-panic)
 var (
 	LogFile    *log.Logger = log.Default()
@@ -27,6 +30,11 @@ func InizializzaAmbiente() {
 		// Sulla VPS non ci blocchiamo perché i parametri sono già gestiti in memoria da Systemd
 		log.Printf("[INFO] File .env non rilevato o già presente in memoria di sistema")
 	}
+
+	// =======================================================
+	// VALORIZZAZIONE DELLA VERSIONE DOPO IL CARICAMENTO .ENV
+	// =======================================================
+	CurrentVersion = os.Getenv("APP_VERSION")
 
 	// 3. DETERMINAZIONE HARDWARE DELL'AMBIENTE (Mac vs VPS Linux)
 	_, statErr := os.Stat("/var/www")
@@ -51,8 +59,6 @@ func InizializzaAmbiente() {
 	logFile, err := os.OpenFile(logPathGo, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Printf("[AVVISO] Impossibile aprire il file di log %s. Output solo su terminale: %v", logPathGo, err)
-		LogFile = log.New(os.Stdout, "", log.LstdFlags)
-		LogConsole = log.New(os.Stdout, "", log.LstdFlags)
 		return
 	}
 

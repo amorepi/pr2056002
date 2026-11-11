@@ -9,13 +9,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"pr2056002/pkg/middleware"
-	"pr2056002/pkg/render"
 	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
-)
+
+	"pr2056002/pkg/render"
+	"pr2056002/pkg/users"
+	"pr2056002/pkg/utils")
 
 // MetricCard definisce la struttura dati per le card hardware/software
 type MetricCard struct {
@@ -33,11 +34,12 @@ type ToolButton struct {
 	Label string
 }
 
-// raccoglie l'intero payload dati richiesto da dashboard.html
+// DashboardContext raccoglie l'intero payload dati richiesto da dashboard.html e layout.html
 type DashboardContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
+	Autenticato bool
 	UserRole    string
 	Version     string
 	Metrics     []MetricCard
@@ -46,7 +48,7 @@ type DashboardContext struct {
 }
 
 // Questa variabile mantiene in memoria la connessione aperta al boot
-var db *sql.DB // Conserva l'istanza della connessione a PostgreSQL
+var db *sql.DB
 
 // SetDatabase riceve la connessione attiva dal main.go
 func SetDatabase(database *sql.DB) {
@@ -149,16 +151,17 @@ func BuildTree(dirPath string, prefix string) string {
 
 // RenderDashboard compila la Dashboard estraendo i dati reali della macchina
 func RenderDashboard(w http.ResponseWriter, r *http.Request) {
-	// 1. Recupero della sessione dal contesto iniettato dalla SentinellaInerte
-	sessione, _ := r.Context().Value(middleware.UserContextKey).(middleware.UserSession)
-
-	// Sicurezza: Se l'utente non è autenticato, viene rispedito in Homepage
-	if !sessione.Autenticato {
+	// 1. Recupero e verifica diretta del cookie di sessione AES-GCM
+	payload, err := users.GetSessionPayload(r)
+	if err != nil || !payload.Attivo || payload.Ruolo != "admin" {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
 	project := os.Getenv("PROJECT")
+	if project == "" {
+		project = "PR2056002"
+	}
 	logoUrl := "/img/" + os.Getenv("LOGO_PROJ")
 	avatarUrl := "/img/" + os.Getenv("AVATAR_PROJ")
 
@@ -180,14 +183,13 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		ramValore = "Rilevazione hardware fallita"
 	}
 
-	// 2. Correzione dei tipi espliciti template.HTML per evitare il blocco grafico
 	metrics := []MetricCard{
-		{Title: "Sistema operativo", Value: template.HTML(sistemaOperativo), IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Motore Backend Attivo", Value: template.HTML(versioneGo + " / Native Server"), IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Server Web Nginx", Value: template.HTML("Proxy Inverso Operativo"), IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Memoria RAM Fisico", Value: template.HTML(ramValore), BadgeText: "Ottimale", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Archiviazione Disco (Root)", Value: template.HTML(spazioDisco), IsFullWidth: false, IsHalfWidth: false},
-		{Title: "Motore Database", Value: template.HTML("PostgreSQL 17 (Connesso)"), BadgeText: "Operativo", BadgeClass: "text-bg-success", IsFullWidth: false, IsHalfWidth: false},
+		{Title: "Sistema operativo", Value: template.HTML(sistemaOperativo)},
+		{Title: "Motore Backend Attivo", Value: template.HTML(versioneGo + " / Native Server")},
+		{Title: "Server Web Nginx", Value: template.HTML("Proxy Inverso Operativo")},
+		{Title: "Memoria RAM Fisico", Value: template.HTML(ramValore), BadgeText: "Ottimale", BadgeClass: "text-bg-success"},
+		{Title: "Archiviazione Disco (Root)", Value: template.HTML(spazioDisco)},
+		{Title: "Motore Database", Value: template.HTML("PostgreSQL 17 (Connesso)"), BadgeText: "Operativo", BadgeClass: "text-bg-success"},
 	}
 
 	tools := []ToolButton{
@@ -204,28 +206,13 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		{Href: "/allUsers", Label: "Tabella Utenti"},
 	}
 
-	// Determina la dizione in italiano in base al ruolo della sessione
-	var ruoloVisualizzato string
-	if !sessione.Autenticato {
-		ruoloVisualizzato = "Anonimo"
-	} else {
-		switch sessione.Ruolo { // Presumendo che l'oggetto sessione contenga il ruolo
-		case "admin":
-			ruoloVisualizzato = "Amministratore"
-		case "user":
-			ruoloVisualizzato = "Utente"
-		default:
-			ruoloVisualizzato = "Utente"
-		}
-	}
-
-	// 3. Il nome utente viene iniettato dinamicamente (mostrerà "amorepi" o chi effettua il login)
 	data := DashboardContext{
 		ProjectName: project,
 		LogoUrl:     logoUrl,
 		AvatarUrl:   avatarUrl,
-		UserRole:    ruoloVisualizzato,
-		Version:     render.CurrentVersion,
+		Autenticato: true,
+		UserRole:    "Amministratore",
+		Version:     utils.CurrentVersion,
 		Metrics:     metrics,
 		Tools:       tools,
 		Databases:   databases,

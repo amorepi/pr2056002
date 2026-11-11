@@ -7,18 +7,35 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"pr2056002/pkg/render"
+	"pr2056002/pkg/users"
+	"pr2056002/pkg/utils"
 )
+
+// Helper interno per verificare il ruolo admin e popolare i dati base della navbar
+func verificaAdminENavbar(w http.ResponseWriter, r *http.Request) (string, bool, string, bool) {
+	payload, err := users.GetSessionPayload(r)
+	if err != nil || !payload.Attivo || payload.Ruolo != "admin" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return "", false, "", false
+	}
+	project := os.Getenv("PROJECT")
+	if project == "" {
+		project = "PR2056002"
+	}
+	return project, true, "Amministratore", true
+}
 
 // StructureContext definisce i parametri per la visualizzazione dell'albero dei file
 type StructureContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
+	Autenticato bool
+	UserRole    string
 	Version     string
 	TreeOutput  string
 }
@@ -28,6 +45,8 @@ type MarkdownContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
+	Autenticato bool
+	UserRole    string
 	Version     string
 	Title       string
 	Subtitle    string
@@ -39,6 +58,8 @@ type NotificaContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
+	Autenticato bool
+	UserRole    string
 	Version     string
 	Title       string
 	Subtitle    string
@@ -46,19 +67,21 @@ type NotificaContext struct {
 
 // StructureHandler genera la mappa dei file richiamando BuildTree
 func StructureHandler(w http.ResponseWriter, r *http.Request) {
-	project := os.Getenv("PROJECT")
-	currentDirectory, _ := os.Getwd()
-	if project == "" {
-		project = filepath.Base(currentDirectory)
+	project, auth, role, ok := verificaAdminENavbar(w, r)
+	if !ok {
+		return
 	}
 
+	currentDirectory, _ := os.Getwd()
 	treeOutput := fmt.Sprintf("%s/\n%s", project, BuildTree(currentDirectory, ""))
 
 	data := StructureContext{
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Version:     render.CurrentVersion,
+		Autenticato: auth,
+		UserRole:    role,
+		Version:     utils.CurrentVersion,
 		TreeOutput:  treeOutput,
 	}
 
@@ -67,6 +90,11 @@ func StructureHandler(w http.ResponseWriter, r *http.Request) {
 
 // ViewMarkdownHandler visualizza a schermo il contenuto convertito dei file di testo
 func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, title, subtitle string) {
+	project, auth, role, ok := verificaAdminENavbar(w, r)
+	if !ok {
+		return
+	}
+
 	data, err := os.ReadFile(targetFile)
 	var contenuto template.HTML
 	if err != nil {
@@ -77,10 +105,12 @@ func ViewMarkdownHandler(w http.ResponseWriter, r *http.Request, targetFile, tit
 	}
 
 	context := MarkdownContext{
-		ProjectName: os.Getenv("PROJECT"),
+		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Version:     render.CurrentVersion,
+		Autenticato: auth,
+		UserRole:    role,
+		Version:     utils.CurrentVersion,
 		Title:       title,
 		Subtitle:    subtitle,
 		HtmlContent: contenuto,
@@ -97,7 +127,7 @@ type UserRow struct {
 	Email     string
 	Cellulare string
 	Role      string
-	Attivo    string // Usiamo stringa ("Attivo"/"Disabilitato") per facilitare il rendering in users.html
+	Attivo    string
 	CreatoIl  string
 }
 
@@ -106,24 +136,31 @@ type UsersContext struct {
 	ProjectName string
 	LogoUrl     string
 	AvatarUrl   string
+	Autenticato bool
+	UserRole    string
 	Version     string
 	Users       []UserRow
 }
 
-// AllUsersHandler interroga PostgreSQL 17 ed estrae in tempo reale le tue credenziali amministrative
+// AllUsersHandler interroga PostgreSQL 17 ed estrae in tempo reale le credenziali
 func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
+	project, auth, role, ok := verificaAdminENavbar(w, r)
+	if !ok {
+		return
+	}
+
 	var utentiReali []UserRow
 
-	// Query strutturata sui nuovi campi reali della tabella utenti
-	query := "SELECT id, email, cellulare, ruolo, attivo, creato_il FROM users ORDER BY id ASC"
+	query := "SELECT id, cognome, nome, email, cellulare, ruolo, attivo, creato_il FROM users ORDER BY id ASC"
 	rows, err := db.Query(query)
 
 	if err != nil {
-		// Se la tabella non esiste (sistema non ancora inizializzato con /creausers), intercettiamo l'avviso
 		log.Printf("[DASHBOARD NOTA]: Tabella utenti non presente o in attesa di inizializzazione: %v", err)
 		utentiReali = []UserRow{
 			{
 				ID:        0,
+				Cognome:   "-",
+				Nome:      "-",
 				Email:     "Tabella non inizializzata nel DB",
 				Cellulare: "N/D",
 				Role:      "guest",
@@ -138,13 +175,12 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 			var attivoBool bool
 			var creatoIlTime time.Time
 
-			err := rows.Scan(&u.ID, &u.Email, &u.Cellulare, &u.Role, &attivoBool, &creatoIlTime)
+			err := rows.Scan(&u.ID, &u.Cognome, &u.Nome, &u.Email, &u.Cellulare, &u.Role, &attivoBool, &creatoIlTime)
 			if err != nil {
 				log.Printf("[DB ERRORE]: Scansione record fallita: %v", err)
 				continue
 			}
 
-			// Trasformiamo i tipi complessi in stringhe pulite per il template esistente
 			u.CreatoIl = creatoIlTime.Format("02/01/2006 15:04")
 			u.Attivo = "Disabilitato"
 			if attivoBool {
@@ -155,17 +191,17 @@ func AllUsersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			log.Printf("[ERRORE DB] Errore riscontrato durante l'iterazione dei record: %v", err)
-			// Gestisci l'errore (es. ritorna l'errore o interrompi il rendering)
 			return
 		}
-		// =======================================================
 	}
 
 	context := UsersContext{
-		ProjectName: os.Getenv("PROJECT"),
+		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Version:     render.CurrentVersion,
+		Autenticato: auth,
+		UserRole:    role,
+		Version:     utils.CurrentVersion,
 		Users:       utentiReali,
 	}
 
@@ -194,8 +230,13 @@ func eseguiTemplateProtetto(w http.ResponseWriter, r *http.Request, pagePath str
 	_, _ = buf.WriteTo(w)
 }
 
-// Legge il diario di Go e lo formatta in ordine cronologico inverso
+// DevelopmentLogHandler legge il diario di Go e lo formatta in ordine cronologico inverso
 func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
+	project, auth, role, ok := verificaAdminENavbar(w, r)
+	if !ok {
+		return
+	}
+
 	logPath := os.Getenv("LOG_PATH_GO")
 	var righeInvertite []string
 
@@ -218,10 +259,12 @@ func DevelopmentLogHandler(w http.ResponseWriter, r *http.Request) {
 	outputFinale := strings.Join(righeInvertite[:limite], "\n")
 
 	context := StructureContext{
-		ProjectName: os.Getenv("PROJECT"),
+		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Version:     render.CurrentVersion,
+		Autenticato: auth,
+		UserRole:    role,
+		Version:     utils.CurrentVersion,
 		TreeOutput:  outputFinale,
 	}
 

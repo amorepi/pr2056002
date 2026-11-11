@@ -35,7 +35,7 @@ func RegisterPasswordRoutes(mux *http.ServeMux, db *sql.DB) {
 // ==========================================
 
 func handleGetPassword(w http.ResponseWriter, r *http.Request) {
-	data := generaMappaDatiBase(r)
+	data := GeneraMappaDatiBase(r)
 	// Cambiamo dinamicamente il valore IsForced se necessario
 	data["IsForced"] = r.URL.Query().Get("reason") == "force"
 	data["Autenticato"] = true
@@ -50,7 +50,7 @@ func handlePostPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	data := generaMappaDatiBase(r)
+	data := GeneraMappaDatiBase(r)
 
 	password1 := r.FormValue("password1")
 	password2 := r.FormValue("password2")

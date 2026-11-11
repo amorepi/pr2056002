@@ -10,7 +10,6 @@ import (
 	"pr2056002/pkg/dashboard"
 	"pr2056002/pkg/initialize"
 	"pr2056002/pkg/middleware"
-	"pr2056002/pkg/render"
 	"pr2056002/pkg/utils"
 
 	// Il "_" obbliga l'inclusione di questo pacchetto anche in assenza di chiamate dirette
@@ -45,8 +44,6 @@ func main() {
 		log.Fatalf("[ERRORE CRITICO AVVIO] Inizializzazione database fallita: %v", err)
 	}
 	// =========================================================================
-
-	render.CurrentVersion = os.Getenv("APP_VERSION")
 
 	// Passa la connessione al package dashboard
 	dashboard.SetDatabase(db)

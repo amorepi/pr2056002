@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -25,6 +26,9 @@ type TokenPayload struct {
 	Scadenza  time.Time `json:"scadenza"`
 }
 
+// Apri il tuo terminale del Mac e lancia questo comando per generare una stringa casuale esadecimale perfetta di 32 caratteri:
+// openssl rand -hex 32
+// Assegna il codice risultante a segretoAES. In produzione, questa chiave deve essere caricata da variabili d'ambiente per motivi di sicurezza.
 // ATTENZIONE: In produzione questa chiave deve essere caricata da variabili d'ambiente
 var segretoAES = []byte("chiave-segreta-da-32-caratteri!!")
 
@@ -104,9 +108,26 @@ func ValidaTokenCriptato(tokenString string) (*TokenPayload, error) {
 	return &payload, nil
 }
 
-// SetSessionCookie impacchetta tutte le specifiche dell'utente nel cookie crittografato AES-GCM.
+// impacchetta tutte le specifiche dell'utente nel cookie crittografato AES-GCM.
+// Cookie configurato con queste regole:
+// Durata fissa: È impostata su 24 ore (durataSessione := 24 * time.Hour).
+// Doppia verifica: La scadenza è scritta sia nel browser (Expires / MaxAge del cookie) sia dentro il payload crittografato
+// (payload.Scadenza). Anche se un utente modificasse la scadenza del cookie sul proprio browser, ValidaTokenCriptato bloccherebbe
+// comunque l'accesso allo scadere delle 24 ore.
+// Validità ai riavvii: Essendo un token stateless (i dati sono cifrati direttamente nel cookie senza salvataggio in RAM),
+// la sessione sopravvive ai riavvii del server Go. Per invalidarla manualmente prima delle 24 ore devi cliccare
+// su Esci (/logout)
 func SetSessionCookie(w http.ResponseWriter, userID int64, email, cellulare, ruolo string, attivo bool) error {
-	durataSessione := 24 * time.Hour
+	// Determinazione hardware dell'ambiente per adeguare le policy di sicurezza
+	_, statErr := os.Stat("/var/www")
+	isProduction := statErr == nil
+
+	var durataSessione time.Duration
+	if isProduction {
+		durataSessione = 24 * time.Hour // In produzione scade dopo 24 ore
+	} else {
+		durataSessione = 30 * 24 * time.Hour // In sviluppo locale dura 30 giorni per comodità
+	}
 
 	tokenCriptato, err := GeneraTokenCriptato(userID, email, cellulare, ruolo, attivo, durataSessione)
 	if err != nil {
@@ -120,7 +141,7 @@ func SetSessionCookie(w http.ResponseWriter, userID int64, email, cellulare, ruo
 		Expires:  time.Now().Add(durataSessione),
 		MaxAge:   int(durataSessione.Seconds()),
 		HttpOnly: true,
-		Secure:   false, // Imposta a true se usi HTTPS in produzione
+		Secure:   isProduction, // false=nessun vincolo; true=invia il cookie solo ed esclusivamente sotto cifratura
 		SameSite: http.SameSiteStrictMode,
 	})
 

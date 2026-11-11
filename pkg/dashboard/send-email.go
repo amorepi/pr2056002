@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"pr2056002/pkg/render"
 	"pr2056002/pkg/utils"
 )
 
@@ -18,14 +17,17 @@ type EmailBodyContext struct {
 
 // SendTestEmailHandler gestisce la lettura del template email, la compilazione e l'invio SMTP
 func SendTestEmailHandler(w http.ResponseWriter, r *http.Request) {
-	project := os.Getenv("PROJECT")
+	project, auth, role, ok := verificaAdminENavbar(w, r)
+	if !ok {
+		return
+	}
 
 	// 1. Lettura e compilazione dinamica del file HTML del corpo della mail
 	emailTemplatePath := "html/templates/test-mail.html"
 	tmpltEmail, err := template.ParseFiles(emailTemplatePath)
 	if err != nil {
 		log.Printf("[MAILER ERRORE]: Impossibile trovare o analizzare il template %s: %v", emailTemplatePath, err)
-		mostraNotificaErrore(w, r, project, "Configurazione Fallita", "Il server non ha trovato il file di template dell'email sul disco.")
+		mostraNotificaErrore(w, r, project, auth, role, "Configurazione Fallita", "Il server non ha trovato il file di template dell'email sul disco.")
 		return
 	}
 
@@ -36,7 +38,7 @@ func SendTestEmailHandler(w http.ResponseWriter, r *http.Request) {
 	var emailBuffer bytes.Buffer
 	if err := tmpltEmail.Execute(&emailBuffer, emailData); err != nil {
 		log.Printf("[MAILER ERRORE]: Errore durante la compilazione del codice HTML della mail: %v", err)
-		mostraNotificaErrore(w, r, project, "Compilazione Fallita", "Impossibile formattare i parametri all'interno della mail.")
+		mostraNotificaErrore(w, r, project, auth, role, "Compilazione Fallita", "Impossibile formattare i parametri all'interno della mail.")
 		return
 	}
 
@@ -53,7 +55,9 @@ func SendTestEmailHandler(w http.ResponseWriter, r *http.Request) {
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Version:     render.CurrentVersion,
+		Autenticato: auth,
+		UserRole:    role,
+		Version:     utils.CurrentVersion,
 	}
 
 	if err != nil {
@@ -69,12 +73,14 @@ func SendTestEmailHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper privato per dirottare istantaneamente l'utente su una notifica d'errore web controllata
-func mostraNotificaErrore(w http.ResponseWriter, r *http.Request, project, titolo, sottotitolo string) {
+func mostraNotificaErrore(w http.ResponseWriter, r *http.Request, project string, auth bool, role, titolo, sottotitolo string) {
 	context := NotificaContext{
 		ProjectName: project,
 		LogoUrl:     "/img/" + os.Getenv("LOGO_PROJ"),
 		AvatarUrl:   "/img/" + os.Getenv("AVATAR_PROJ"),
-		Version:     render.CurrentVersion,
+		Autenticato: auth,
+		UserRole:    role,
+		Version:     utils.CurrentVersion,
 		Title:       titolo,
 		Subtitle:    sottotitolo,
 	}

@@ -49,10 +49,14 @@
                 <li><a class="dropdown-menu-item dropdown-item fw-bold text-primary" href="/profilo">Profilo Utente</a></li>
                 <li><a class="dropdown-menu-item dropdown-item fw-bold text-primary" href="/modificaPassword">Modifica Password</a></li>
                 <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-menu-item dropdown-item" href="/login">Login</a></li>
+                <li><a class="dropdown-menu-item dropdown-item" href="/signup">Signup</a></li>
+                <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-menu-item dropdown-item text-danger" href="/logout">Esci</a></li>
+              {{else}}
+                <li><a class="dropdown-menu-item dropdown-item" href="/login">Login</a></li>
+                <li><a class="dropdown-menu-item dropdown-item" href="/signup">Signup</a></li>
               {{end}}
-              <li><a class="dropdown-menu-item dropdown-item" href="/login">Login</a></li>
-              <li><a class="dropdown-menu-item dropdown-item" href="/signup">Signup</a></li>
             </ul>
           </li>
         </ul>

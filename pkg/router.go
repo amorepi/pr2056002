@@ -9,7 +9,6 @@ import (
 	"text/template"
 
 	"pr2056002/pkg/dashboard"
-	"pr2056002/pkg/middleware"
 	"pr2056002/pkg/render"
 	"pr2056002/pkg/users"
 )
@@ -23,27 +22,8 @@ func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 	// REGISTRAZIONE ROTTE DEI MODULI SPECIFICI
 	// ==========================================
 
-	// Rotte del modulo utenti
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			users.HandlePostLogin(w, r, db)
-		} else {
-			users.HandleGetLogin(w, r)
-		}
-	})
-
-	mux.HandleFunc("/logout", users.HandleLogout)
-
-	mux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			users.HandlePostSignup(w, r, db)
-		} else {
-			users.HandleGetSignup(w, r)
-		}
-	})
-
-	// Modulo di modifica password
-	users.RegisterPasswordRoutes(mux, db)
+	// Delega tutte le rotte utente (login, logout, signup, modificaPassword) al pacchetto users
+	users.RegisterRoutes(mux, db)
 
 	// ==========================================
 	// HANDLER UNICO CENTRALIZZATO PER LA RADICE (/) E UTILITY
@@ -76,15 +56,7 @@ func RegisterRoutes(mux *http.ServeMux, db *sql.DB) {
 
 		// ROTTA DINAMICA DELLA RADICE (/) -> Home Page Pubblica
 		if r.URL.Path == "/" {
-			sessione, _ := r.Context().Value(middleware.UserContextKey).(middleware.UserSession)
-
-			data := map[string]interface{}{
-				"ProjectName": "PR2056002",
-				"Version":     render.CurrentVersion,
-				"LogoUrl":     "/img/" + os.Getenv("LOGO_PROJ"),
-				"AvatarUrl":   "/img/" + os.Getenv("AVATAR_PROJ"),
-				"Autenticato": sessione.Autenticato,
-			}
+			data := users.GeneraMappaDatiBase(r)
 
 			tmpl, err := template.New("layout").ParseFiles("html/templates/layout.html", "html/templates/layout-home-body.html")
 			if err != nil {
